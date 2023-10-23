@@ -4,9 +4,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import shiny.experimental as x
 import io
-import os
-import sys
-from pathlib import Path
 
 from plotting_tools.split_histogram import filter_plot 
 
