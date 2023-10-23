@@ -14,7 +14,7 @@ from plotting_tools.split_histogram import filter_plot
 def graph_module_ui(label: str, plot_input_options):
     # Create text_input elements
     plot_input_text_ui_elements = []
-    for k,v in plot_input_options['text_input'].items():
+    for k,v in plot_input_options['text_input'].items(): # TODO: Handle KeyError for dictionaries. Prevents UI config from having to include all possible options.
         plot_input_text_ui_elements.append(ui.input_text(id=k, **v))
 
     # Create select elements that will be updated by the update_axies_select(). Adding dataset column names to the 'choices' parameter.
