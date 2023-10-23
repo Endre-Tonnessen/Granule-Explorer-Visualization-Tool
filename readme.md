@@ -8,4 +8,4 @@ To start the application:
 
     shiny run app.py 
 
-When developing add the `--reload` for live refreshes/updating.
+When developing add the `--reload` flag for live refreshes/updating.
