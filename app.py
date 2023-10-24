@@ -1,3 +1,4 @@
+import platform
 from shiny import App, render, ui, reactive
 from shiny.types import ImgData, FileInfo
 import shiny.experimental as x
@@ -9,8 +10,10 @@ import matplotlib.pyplot as plt
 import shinyswatch
 import sys
 import pathlib
-temp = pathlib.PosixPath
-pathlib.PosixPath = pathlib.WindowsPath
+plt = platform.system()
+if plt == 'Windows': pathlib.PosixPath = pathlib.WindowsPath
+# temp = pathlib.PosixPath
+# pathlib.PosixPath = pathlib.WindowsPath
 
 # Modules
 from modules.graph_module import graph_module_ui, graph_module_server
