@@ -85,6 +85,8 @@ def graph_module_server(input: Inputs,
             for k_2, v_2 in plot_parameters[k].items():
                 if k == "static_input": # If static value, no need to get it from ui
                     plot_parameters_from_user_input[k_2] = v_2['value']
+                elif k == 'select_input_dataset_columns':
+                    plot_parameters_from_user_input[k_2] = alias_to_column(input[k_2]()) # Get user input from select elements and transform them back into dataframe column name
                 else:
                     plot_parameters_from_user_input[k_2] = input[k_2]() # Get user input from ui
         return plot_parameters_from_user_input
@@ -111,10 +113,16 @@ def graph_module_server(input: Inputs,
         """
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
             return        
+        
         granule_data_df: list[pd.DataFrame] = granule_data_reactive_value.get() # Call reactive value to get its contents
-
+        column_names: list[str] = granule_data_df[0].columns.to_list()
+        filtered_column_names = filter_columns(column_names)                    # Remove blacklisted columns that should not be shown to user.
+        column_alias_names: list[str] = columns_to_alias(filtered_column_names) # Get human readable names for df columns
+               
         for k,v in plot_parameters['select_input_dataset_columns'].items():
-            ui.update_select(id=k, choices=granule_data_df[0].columns.to_list(), selected=v['selected'])
+            ui.update_select(id=k,                                      # Update select elements with column aliases
+                             choices=column_alias_names, 
+                             selected=column_to_alias(v['selected']))   # Get human readable name for the current selected value
     
     @session.download(filename="data.png")
     async def download_plot():  
@@ -156,3 +164,56 @@ def despine_axis(ax):
     """
     ax.spines["right"].set_visible(False)
     ax.spines["top"].set_visible(False)
+
+
+
+column_aliases = {
+                "times":"Times(s)",
+                "sigma": "Interfacial Tension (N/m)",
+                "kappa_scale": "Bending Rigidity ($k_{\mathrm{B}}T$)",
+                "sigma_err": "Surface Tension Error (N/m)",
+                "kappa_scale_err": "Bending Rigidity Error($k_{\mathrm{B}}T$)",
+                "fitting_error": "Fitting Error",
+                "q_2_mag": "$|C_2|^2$",
+                "mean_radius":"Mean Radius",
+                "pass_rate":"Pass Rate",
+                "mean_intensity":"Intensity"}
+column_filter = ['granule_id','image_path','x','y','bbox_left','bbox_bottom','bbox_right','bbox_top','figure_path', 'treatment']
+
+def filter_columns(column_names: list[str]) -> list[str]:
+    """
+        Removes columns user shout not see.
+    """
+    filtered_column_names = [column for column in column_names if column not in column_filter]
+    return filtered_column_names
+
+def columns_to_alias(column_names: list[str]) -> list[str]:
+    """
+        Returns list of column names replaced with human readable aliases.
+        If no alias is found it defaults to returning column name 
+    """
+    filtered_names = filter_columns(column_names) # Remove columns user should not see
+
+    for i in range(len(filtered_names)):
+        if filtered_names[i] in column_aliases.keys():
+            filtered_names[i] = column_aliases[filtered_names[i]]
+    return filtered_names
+
+def column_to_alias(column_name: str) -> str:
+    """
+        Returns alias name corresponding to given column. 
+        If no alias is found, returns alias.
+    """
+    if column_name in column_aliases.keys():
+        return column_aliases[column_name]
+    return column_name
+
+def alias_to_column(alias: str) -> str:
+    """ 
+        Returns column name corresponding to given alias. 
+        If no column is found, returns alias.
+    """
+    for k,v in column_aliases.items():
+        if v == alias:
+            return k # Return alias
+    return alias # No alias for input
