@@ -131,14 +131,14 @@ def graph_module_server(input: Inputs,
             sigma_filter = f"sigma > {input['sigma_filter_input']()}"
             query.append(sigma_filter)
         if input['pass_rate_filter_switch']():
-            sigma_filter = f"pass_rate > {input['pass_rate_filter_input']()}"
-            query.append(sigma_filter)
+            pass_rate_filter = f"pass_rate > {input['pass_rate_filter_input']()}"
+            query.append(pass_rate_filter)
         if input['fitting_error_filter_switch']():
-            sigma_filter = f"fitting_error > {input['fitting_error_filter_input']()}"
-            query.append(sigma_filter)
+            fitting_error_filter = f"fitting_error > {input['fitting_error_filter_input']()}"
+            query.append(fitting_error_filter)
         if input['fitting_diff_filter_switch']():
-            sigma_filter = f"fitting_diff > {input['fitting_diff_filter_input']()}"
-            query.append(sigma_filter)
+            fitting_diff_filter = f"fitting_diff > {input['fitting_diff_filter_input']()}"
+            query.append(fitting_diff_filter)
         if len(query) > 0:
             query = ''.join(list(map(lambda filter: filter + " and ", query[:-1]))) + query[-1] # Add "and" between queries
             filtered_granule_data: pd.DataFrame = granule_data_df.query(
