@@ -8,7 +8,7 @@ import io
 from plotting_tools.split_histogram import filter_plot 
 
 @module.ui
-def graph_module_ui(label: str, plot_input_options):
+def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
     # Create text_input elements
     plot_input_text_ui_elements = []
     for k,v in plot_input_options['text_input'].items(): # TODO: Handle KeyError for dictionaries. Prevents UI config from having to include all possible options.
@@ -61,7 +61,28 @@ def graph_module_ui(label: str, plot_input_options):
                 *plot_input_text_ui_elements, # Unpack plot input ui elements
                 *plot_input_select_ui_elements
             ),
-            ui.output_data_frame("contents"),
+            x.ui.layout_column_wrap("450px",
+                x.ui.card(
+                    x.ui.card_header("Dataset filters"),
+                    ui.row( 
+                        ui.input_switch(id="sigma_filter_switch", label="Sigma >", width="170px"),
+                        ui.input_numeric(id="sigma_filter_input", label="", value=1e-10, step=1e-10, width="200px")
+                    ),
+                    ui.row(
+                        ui.input_switch(id="pass_rate_filter_switch", label="pass_rate >", width="170px"),
+                        ui.input_numeric(id="pass_rate_filter_input", label="", value=0.6, step=0.1, width="200px")
+                    ),
+                    ui.row(
+                        ui.input_switch(id="fitting_error_filter_switch", label="fitting_error <", width="170px"),
+                        ui.input_numeric(id="fitting_error_filter_input", label="", value=0.5, step=0.1, width="200px")
+                    ),
+                    ui.row(
+                        ui.input_switch(id="fitting_diff_filter_switch", label="fitting_diff >", width="170px"),
+                        ui.input_numeric(id="fitting_diff_filter_input", label="", value=0.03, step=0.01, width="200px")
+                    ),
+                ),
+                
+            )
         )
     )
 
@@ -102,8 +123,31 @@ def graph_module_server(input: Inputs,
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
             return
       
-        granule_data_df: list[pd.DataFrame] = granule_data_reactive_value.get() # Call reactive value to get its contents
-        return graph_function(granule_data=granule_data_df[0],**parse_plot_parameters())
+        granule_data_df: list[pd.DataFrame] = granule_data_reactive_value.get()[0] # Call reactive value to get its contents
+        
+        # Get dataset filters and return filtered data #TODO: Clean up this prototype code block
+        query = []
+        if input['sigma_filter_switch']():
+            sigma_filter = f"sigma > {input['sigma_filter_input']()}"
+            query.append(sigma_filter)
+        if input['pass_rate_filter_switch']():
+            sigma_filter = f"pass_rate > {input['pass_rate_filter_input']()}"
+            query.append(sigma_filter)
+        if input['fitting_error_filter_switch']():
+            sigma_filter = f"fitting_error > {input['fitting_error_filter_input']()}"
+            query.append(sigma_filter)
+        if input['fitting_diff_filter_switch']():
+            sigma_filter = f"fitting_diff > {input['fitting_diff_filter_input']()}"
+            query.append(sigma_filter)
+        if len(query) > 0:
+            query = ''.join(list(map(lambda filter: filter + " and ", query[:-1]))) + query[-1] # Add "and" between queries
+            filtered_granule_data: pd.DataFrame = granule_data_df.query(
+                query,
+                inplace=False
+            )
+            granule_data_df = filtered_granule_data
+        
+        return graph_function(granule_data=granule_data_df,**parse_plot_parameters())
 
     @reactive.Effect
     def update_axies_select():
@@ -132,6 +176,8 @@ def graph_module_server(input: Inputs,
             This determines what the browser will name the downloaded file. 
 
             TODO: Find alternative approach allowing us to name the download programmatically. Currently it is a static name.
+            
+            TODO: Place graph creation and formating in its own class.
         """
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
                 return
@@ -166,8 +212,8 @@ def despine_axis(ax):
     ax.spines["top"].set_visible(False)
 
 
-
-column_aliases = {
+# TODO: Create a new class/file for this logic
+column_aliases = { 
                 "times":"Times(s)",
                 "sigma": "Interfacial Tension (N/m)",
                 "kappa_scale": "Bending Rigidity ($k_{\mathrm{B}}T$)",
