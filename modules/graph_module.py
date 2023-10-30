@@ -43,7 +43,7 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
                 
                 ui.page_bootstrap(ui.input_action_button("update_plot", "Update plot"),
                                     # ui.download_button("download_plot", "Download Plot"),
-                                    ui.input_action_button("modal_download", "Modal")),
+                                    ui.input_action_button("modal_download", "Download")),
                 ui.hr(),
 
                 # Unpack ui elemets from list
@@ -118,7 +118,7 @@ def graph_module_server(input: Inputs,
         return plot_parameters_from_user_input
     
     @output
-    @render.plot(alt="A simulation plot")
+    @render.plot(alt="Plot")
     @reactive.event(input.update_plot, granule_data_reactive_value)
     def plot():
         """
@@ -159,10 +159,13 @@ def graph_module_server(input: Inputs,
         m = ui.modal(
             ui.row(
                 ui.column(6, 
-                      ui.input_numeric(id="download_figure_dpi", label="Dpi", value=300, width="100px")
+                      ui.input_numeric(id="download_figure_dpi", label="Dpi", value=300, width="100px"),
+                      ui.input_numeric(id="download_figure_padding", label="Padding", value=0.15, width="100px"),
+                      ui.input_numeric(id="download_figure_tl_padding", label="Tl padding", value=1.08, width="100px"),
                       ),
                 ui.column(6, 
-                      ui.input_select(id="download_file_format", choices=["svg", "png", "jpeg"], selected="svg", label="", width="100px")
+                      ui.input_select(id="download_file_format", choices=["svg", "png", "jpeg"], selected="svg", label="", width="100px"),
+                      ui.input_switch(id="download_figure_despine_axis", label="Despine axis")
                       ),
             ),
             ui.download_button("download_plot", "Download Plot"),
@@ -172,14 +175,15 @@ def graph_module_server(input: Inputs,
         )
         ui.modal_show(m)
 
-    @session.download(filename="data.png")
+    @session.download(filename="data.svg")
     async def download_plot():  
         """
             File download implemented by yielding bytes, in this case either all at
             once (the entire plot). Filename is determined in the @session.Download decorator ontop of function.
             This determines what the browser will name the downloaded file. 
 
-            TODO: Find alternative approach allowing us to name the download programmatically. Currently it is a static name.            
+            TODO: Find alternative approach allowing us to name the download programmatically. Currently it is a static name.    
+                    -> Might have to save plot to disk, then IO to user. Not ideal.        
         """
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
                 return
