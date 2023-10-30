@@ -6,6 +6,8 @@ import shiny.experimental as x
 import io
 
 from plotting_tools.split_histogram import filter_plot 
+from plotting_tools.create_plot import create_download_figure, create_fig
+
 
 @module.ui
 def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
@@ -40,7 +42,7 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
                 ui.row(),
                 
                 ui.page_bootstrap(ui.input_action_button("update_plot", "Update plot"),
-                                    ui.download_button("download_plot", "Download Plot"),
+                                    # ui.download_button("download_plot", "Download Plot"),
                                     ui.input_action_button("modal_b", "Modal")),
                 ui.hr(),
 
@@ -124,31 +126,12 @@ def graph_module_server(input: Inputs,
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
             return
       
-        granule_data_df: list[pd.DataFrame] = granule_data_reactive_value.get()[0] # Call reactive value to get its contents
+        granule_data_df: pd.DataFrame = granule_data_reactive_value.get()[0] # Call reactive value to get its contents
+        return create_fig(input=input, 
+                          granule_data_df=granule_data_df, 
+                          graph_function=graph_function,
+                          plot_parameters=parse_plot_parameters())
         
-        # Get dataset filters and return filtered data #TODO: Clean up this prototype code block
-        query = []
-        if input['sigma_filter_switch']():
-            sigma_filter = f"sigma > {input['sigma_filter_input']()}"
-            query.append(sigma_filter)
-        if input['pass_rate_filter_switch']():
-            pass_rate_filter = f"pass_rate > {input['pass_rate_filter_input']()}"
-            query.append(pass_rate_filter)
-        if input['fitting_error_filter_switch']():
-            fitting_error_filter = f"fitting_error > {input['fitting_error_filter_input']()}"
-            query.append(fitting_error_filter)
-        if input['fitting_diff_filter_switch']():
-            fitting_diff_filter = f"fitting_diff > {input['fitting_diff_filter_input']()}"
-            query.append(fitting_diff_filter)
-        if len(query) > 0:
-            query = ''.join(list(map(lambda filter: filter + " and ", query[:-1]))) + query[-1] # Add "and" between queries
-            filtered_granule_data: pd.DataFrame = granule_data_df.query(
-                query,
-                inplace=False
-            )
-            granule_data_df = filtered_granule_data
-        
-        return graph_function(granule_data=granule_data_df,**parse_plot_parameters())
 
     @reactive.Effect
     def update_axies_select():
@@ -195,41 +178,22 @@ def graph_module_server(input: Inputs,
             once (the entire plot). Filename is determined in the @session.Download decorator ontop of function.
             This determines what the browser will name the downloaded file. 
 
-            TODO: Find alternative approach allowing us to name the download programmatically. Currently it is a static name.
-            
-            TODO: Place graph creation and formating in its own class.
+            TODO: Find alternative approach allowing us to name the download programmatically. Currently it is a static name.            
         """
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
                 return
         with io.BytesIO() as buf:
-            granule_data_df: list[pd.DataFrame] = granule_data_reactive_value.get()
-            fig = graph_function(granule_data=granule_data_df[0], **parse_plot_parameters())
-            padding=0.15
-            tl_padding=1.08
-            despine=True
-            dpi=330
-
-            # Remove the right and top axis
-            axs = fig.get_axes()
-            if despine:
-                [despine_axis(ax) for ax in axs]
-
-            plotKwargs = {}
-            if padding:
-                plotKwargs = dict(bbox_inches="tight", pad_inches=padding)
-
-            fig.tight_layout(pad=tl_padding)
-            fig.savefig(buf, dpi=dpi, format="png", **plotKwargs)
+            granule_data_df: pd.DataFrame = granule_data_reactive_value.get()[0]
+            fig = create_download_figure(input=input, 
+                                         granule_data_df=granule_data_df, 
+                                         graph_function=graph_function, 
+                                         plot_parameters=parse_plot_parameters(),
+                                         save_buffer=buf)
             yield buf.getvalue()
             plt.close(fig=fig)
 
-def despine_axis(ax):
-    """Remove the top and right axis.
 
-    This emulates seaborn.despine, but doesn't require the modules.
-    """
-    ax.spines["right"].set_visible(False)
-    ax.spines["top"].set_visible(False)
+
 
 
 # TODO: Create a new class/file for this logic
