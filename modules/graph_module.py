@@ -40,7 +40,8 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
                 ui.row(),
                 
                 ui.page_bootstrap(ui.input_action_button("update_plot", "Update plot"),
-                                    ui.download_button("download_plot", "Download Plot")),
+                                    ui.download_button("download_plot", "Download Plot"),
+                                    ui.input_action_button("modal_b", "Modal")),
                 ui.hr(),
 
                 # Unpack ui elemets from list
@@ -65,19 +66,19 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
                 x.ui.card(
                     x.ui.card_header("Dataset filters"),
                     ui.row( 
-                        ui.input_switch(id="sigma_filter_switch", label="Sigma >", width="170px"),
+                        ui.input_switch(id="sigma_filter_switch", label="Sigma >", width="170px", value=True),
                         ui.input_numeric(id="sigma_filter_input", label="", value=1e-10, step=1e-10, width="200px")
                     ),
                     ui.row(
-                        ui.input_switch(id="pass_rate_filter_switch", label="pass_rate >", width="170px"),
+                        ui.input_switch(id="pass_rate_filter_switch", label="pass_rate >", width="170px", value=True),
                         ui.input_numeric(id="pass_rate_filter_input", label="", value=0.6, step=0.1, width="200px")
                     ),
                     ui.row(
-                        ui.input_switch(id="fitting_error_filter_switch", label="fitting_error <", width="170px"),
+                        ui.input_switch(id="fitting_error_filter_switch", label="fitting_error <", width="170px", value=True),
                         ui.input_numeric(id="fitting_error_filter_input", label="", value=0.5, step=0.1, width="200px")
                     ),
                     ui.row(
-                        ui.input_switch(id="fitting_diff_filter_switch", label="fitting_diff >", width="170px"),
+                        ui.input_switch(id="fitting_diff_filter_switch", label="fitting_diff >", width="170px", value=True),
                         ui.input_numeric(id="fitting_diff_filter_input", label="", value=0.03, step=0.01, width="200px")
                     ),
                 ),
@@ -168,6 +169,25 @@ def graph_module_server(input: Inputs,
                              choices=column_alias_names, 
                              selected=column_to_alias(v['selected']))   # Get human readable name for the current selected value
     
+    @reactive.Effect
+    @reactive.event(input.modal_b)
+    def modal_b():
+        m = ui.modal(
+            ui.row(
+                ui.column(6, 
+                      ui.input_numeric(id="download_figure_dpi", label="Dpi", value=300, width="100px")
+                      ),
+                ui.column(6, 
+                      ui.input_select(id="download_file_format", choices=["svg", "png", "jpeg"], selected="svg", label="", width="100px")
+                      ),
+            ),
+            ui.download_button("download_plot", "Download Plot"),
+            title="Download config",
+            easy_close=True,
+            footer=None,
+        )
+        ui.modal_show(m)
+
     @session.download(filename="data.png")
     async def download_plot():  
         """
@@ -228,7 +248,7 @@ column_filter = ['granule_id','image_path','x','y','bbox_left','bbox_bottom','bb
 
 def filter_columns(column_names: list[str]) -> list[str]:
     """
-        Removes columns user shout not see.
+        Removes columns user should not see.
     """
     filtered_column_names = [column for column in column_names if column not in column_filter]
     return filtered_column_names
@@ -248,7 +268,7 @@ def columns_to_alias(column_names: list[str]) -> list[str]:
 def column_to_alias(column_name: str) -> str:
     """
         Returns alias name corresponding to given column. 
-        If no alias is found, returns alias.
+        If no alias is found, returns column_name.
     """
     if column_name in column_aliases.keys():
         return column_aliases[column_name]
