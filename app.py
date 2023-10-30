@@ -106,7 +106,7 @@ scatter_plot_input_options={
     }),
 }
 
-filter_plot_plot_input_options={
+filter_plot_input_options={
     'text_input': dict({
         "plot_title":dict({
             'value':"defualt value", 
@@ -172,7 +172,7 @@ app_ui = ui.page_fluid(
                     graph_module_ui(id="2dhistogram", label="2D Histogram", plot_input_options=twoDHist_plot_input_options)
                 ),
                 ui.nav("Filter plot", 
-                    graph_module_ui(id="filter_plot", label="Filter plot", plot_input_options=filter_plot_plot_input_options)
+                    graph_module_ui(id="filter_plot", label="Filter plot", plot_input_options=filter_plot_input_options)
                 ),
                 ui.nav_menu(
                     "Other links",
@@ -197,9 +197,9 @@ def server(input, output, session):
     granule_data_reactive_value: reactive.Value[list[pd.DataFrame]] = file_upload_module_server("global_file_upload")
 
     # Graph modules
-    graph_module_server(id="scatteplot", granule_data_reactive_value=granule_data_reactive_value, graph_function=splth.scatter_plot, plot_parameters=scatter_plot_input_options) # Pass data to graph module
-    graph_module_server(id="2dhistogram", granule_data_reactive_value=granule_data_reactive_value, graph_function=splth.histogram2D, plot_parameters=twoDHist_plot_input_options) # Pass data to graph module
-    graph_module_server(id="filter_plot", granule_data_reactive_value=granule_data_reactive_value, graph_function=splth.filter_plot, plot_parameters=filter_plot_plot_input_options) # Pass data to graph module
+    graph_module_server(id="scatteplot", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.scatter_plot, plot_parameters=scatter_plot_input_options) # Pass data to graph module
+    graph_module_server(id="2dhistogram", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.histogram2D, plot_parameters=twoDHist_plot_input_options) # Pass data to graph module
+    graph_module_server(id="filter_plot", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.filter_plot, plot_parameters=filter_plot_input_options) # Pass data to graph module
 
     
         
