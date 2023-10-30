@@ -1,39 +1,49 @@
 import pandas as pd
 from shiny import App, Inputs, Outputs, Session, module, render, ui, reactive
 import io
-
-
-
-"""
-    Class handles all plot creation logic, returning the figure
-
-"""
-
-
+import matplotlib.pyplot as plt
+from typing import Callable
 
 def create_fig(input: Inputs, 
                granule_data_df: pd.DataFrame, 
-               graph_function, 
-               plot_parameters: dict):
-    """
-    
+               plot_function: Callable, 
+               plot_parameters: dict) -> plt.figure:
+    """Based on given data, graph function and graph parameters, returns resulting figure from the filtered dataset.
+
+    Args:
+        input (Inputs): Shiny variable containing user input
+        granule_data_df (pd.DataFrame): Data used in plot creation
+        plot_function (Callable): Function creating the plot
+        plot_parameters (dict): user parameters passed on to the plot function 
+
+    Returns:
+        matplotlib.figure.Figure: Figure
     """
     granule_data_df = filter_dataset(input, granule_data_df)
-    fig = graph_function(granule_data=granule_data_df, **plot_parameters)
+    fig = plot_function(granule_data=granule_data_df, **plot_parameters)
     return fig
 
 def create_download_figure(input: Inputs, 
                            granule_data_df: pd.DataFrame, 
-                           graph_function, 
+                           plot_function: Callable, 
                            plot_parameters: dict, 
                            save_buffer: io.BytesIO):
-    """
-        Creates plot with ouput settings.. 
-        Saves to given io buffer zone for download in browser.
+    """Creates plot with ouput settings. Saves to given io buffer zone for download in browser.
+
+    Args:
+        input (Inputs): Shiny variable containing user input
+        granule_data_df (pd.DataFrame): Data used in plot creation
+        plot_function (Callable): Function creating the plot
+        plot_parameters (dict): user parameters passed on to the plot function 
+        save_buffer (io.BytesIO): buffer the figure is save to for IO operations
+
+    Returns:
+        This function does not return anything.  
+        Its side-effect is saving the created figure in the bytes buffer.
     """
     fig = create_fig(input=input, 
                      granule_data_df=granule_data_df, 
-                     graph_function=graph_function, 
+                     plot_function=plot_function, 
                      plot_parameters=plot_parameters)
     # Output settings
     padding=0.15
@@ -62,7 +72,16 @@ def create_download_figure(input: Inputs,
     fig.savefig(save_buffer, dpi=dpi, format="png", **plotKwargs)
 
 
-def filter_dataset(input: Inputs, granule_data_df: pd.DataFrame):
+def filter_dataset(input: Inputs, granule_data_df: pd.DataFrame) -> pd.DataFrame:
+    """Filters given dataset based on user selected values.
+       Returns a new Dataframe.
+    Args:
+        input (Inputs): Shiny variable containing user input
+        granule_data_df (pd.DataFrame): Dataframe to filter
+
+    Returns:
+        pd.DataFrame: Filtered dataset
+    """
     # Get dataset filters and return filtered data #TODO: Clean up this prototype code block
     query = []
     if input['sigma_filter_switch']():
