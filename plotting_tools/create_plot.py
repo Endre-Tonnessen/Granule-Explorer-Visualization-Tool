@@ -41,15 +41,15 @@ def create_download_figure(input: Inputs,
         This function does not return anything.  
         Its side-effect is saving the created figure in the bytes buffer.
     """
-    fig = create_fig(input=input, 
+    fig: plt.figure = create_fig(input=input, 
                      granule_data_df=granule_data_df, 
                      plot_function=plot_function, 
                      plot_parameters=plot_parameters)
-    # Output settings
-    padding=0.15
-    tl_padding=1.08
-    despine=True
-    dpi=330
+    # Get user settings
+    padding = input['download_figure_padding']()
+    tl_padding = input['download_figure_tl_padding']()
+    despine = input['download_figure_despine_axis']()
+    dpi = input['download_figure_dpi']()
 
     def despine_axis(ax):
         """Remove the top and right axis.
@@ -69,7 +69,7 @@ def create_download_figure(input: Inputs,
         plotKwargs = dict(bbox_inches="tight", pad_inches=padding)
 
     fig.tight_layout(pad=tl_padding)
-    fig.savefig(save_buffer, dpi=dpi, format="png", **plotKwargs)
+    fig.savefig(save_buffer, dpi=dpi, format=input['download_file_format'](), **plotKwargs)
 
 
 def filter_dataset(input: Inputs, granule_data_df: pd.DataFrame) -> pd.DataFrame:
