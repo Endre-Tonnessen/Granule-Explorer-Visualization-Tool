@@ -4,10 +4,10 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import shiny.experimental as x
 import io
+from typing import Callable
 
 from plotting_tools.split_histogram import filter_plot 
 from plotting_tools.create_plot import create_download_figure, create_fig
-
 
 @module.ui
 def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
@@ -43,7 +43,7 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
                 
                 ui.page_bootstrap(ui.input_action_button("update_plot", "Update plot"),
                                     # ui.download_button("download_plot", "Download Plot"),
-                                    ui.input_action_button("modal_b", "Modal")),
+                                    ui.input_action_button("modal_download", "Modal")),
                 ui.hr(),
 
                 # Unpack ui elemets from list
@@ -95,13 +95,15 @@ def graph_module_server(input: Inputs,
                         output: Outputs,
                         session: Session, 
                         granule_data_reactive_value: reactive.Value[list[pd.DataFrame]], 
-                        graph_function, 
+                        plot_function: Callable, 
                         plot_parameters: dict[dict[dict]]):
     
     def parse_plot_parameters() -> dict:
-        """
-            Parses and returns a 1d dictonary with the plot parameters required for the graph function.
-                -> Any non-static element is retrieved from the ui.  
+        """Parses and returns a 1d dictonary with the plot parameters required for the plot function.
+                -> Any non-static elements value is retrieved from the ui. 
+
+        Returns:
+            dict: Dictionary with key value pairs for the plotting function
         """
         plot_parameters_from_user_input = dict()
         # Update user input values from corresponding ui input elements. k_2 is the id for each input in ui.
@@ -120,7 +122,7 @@ def graph_module_server(input: Inputs,
     @reactive.event(input.update_plot, granule_data_reactive_value)
     def plot():
         """
-            Renders a new plot based on the given graph function and its plot-parameters.
+            Renders a new plot based on the given plot function and its plot-parameters.
             If a file is uploaded or the "Update plot" button is triggered, this function will run.
         """
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
@@ -129,10 +131,9 @@ def graph_module_server(input: Inputs,
         granule_data_df: pd.DataFrame = granule_data_reactive_value.get()[0] # Call reactive value to get its contents
         return create_fig(input=input, 
                           granule_data_df=granule_data_df, 
-                          graph_function=graph_function,
+                          plot_function=plot_function,
                           plot_parameters=parse_plot_parameters())
         
-
     @reactive.Effect
     def update_axies_select():
         """
@@ -142,8 +143,8 @@ def graph_module_server(input: Inputs,
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
             return        
         
-        granule_data_df: list[pd.DataFrame] = granule_data_reactive_value.get() # Call reactive value to get its contents
-        column_names: list[str] = granule_data_df[0].columns.to_list()
+        granule_data_df: pd.DataFrame = granule_data_reactive_value.get()[0] # Call reactive value to get its contents
+        column_names: list[str] = granule_data_df.columns.to_list()
         filtered_column_names = filter_columns(column_names)                    # Remove blacklisted columns that should not be shown to user.
         column_alias_names: list[str] = columns_to_alias(filtered_column_names) # Get human readable names for df columns
                
@@ -153,8 +154,8 @@ def graph_module_server(input: Inputs,
                              selected=column_to_alias(v['selected']))   # Get human readable name for the current selected value
     
     @reactive.Effect
-    @reactive.event(input.modal_b)
-    def modal_b():
+    @reactive.event(input.modal_download)
+    def modal_download():
         m = ui.modal(
             ui.row(
                 ui.column(6, 
@@ -182,11 +183,12 @@ def graph_module_server(input: Inputs,
         """
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
                 return
+        
         with io.BytesIO() as buf:
             granule_data_df: pd.DataFrame = granule_data_reactive_value.get()[0]
             fig = create_download_figure(input=input, 
                                          granule_data_df=granule_data_df, 
-                                         graph_function=graph_function, 
+                                         plot_function=plot_function, 
                                          plot_parameters=parse_plot_parameters(),
                                          save_buffer=buf)
             yield buf.getvalue()
