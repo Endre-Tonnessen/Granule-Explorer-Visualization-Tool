@@ -11,10 +11,10 @@ from shiny.types import FileInfo
 @module.ui
 def file_upload_module_ui():
     return (ui.input_file("graunle_aggregate_data", "Upload granule data", accept=[".h5"], multiple=True),
-                ui.input_checkbox("header", "Mutiple uploads", True),)
+            ui.input_file("graunle_image_data", "Upload image data", accept=[".ims"], multiple=False))
         
 @module.server
-def file_upload_module_server(input: Inputs, output: Outputs, session: Session, starting_value=None) -> reactive.Value[list[pd.DataFrame]]:
+def file_upload_module_server(input: Inputs, output: Outputs, session: Session) -> reactive.Value[pd.DataFrame]:
     uploaded_file = reactive.Value()
 
     @reactive.Effect
@@ -25,9 +25,10 @@ def file_upload_module_server(input: Inputs, output: Outputs, session: Session, 
             Sets the results to the reactive value container.
         """
         f: list[FileInfo] = input.graunle_aggregate_data()
-
-        # TODO: Handle multiple files differently? Speak with Jack about plotting functions, specifically comparison plots.
-        df = [read_data(Path(f[i]["datapath"]), None) for i in range(len(f))] # Read and format all files
+        # Get path to each uploaded file
+        file_paths: list[Path] = [Path(f[i]["datapath"]) for i in range(len(f))]
+        df = read_data(file_paths)
+        # print(df['treatment'])
         uploaded_file.set(df)
     
     return uploaded_file
@@ -40,35 +41,25 @@ import re
 re_experiment_name = re.compile("--N(?P<exp>[\d\w_-]+?)(?:--|\.)")
 re_time_stamp = re.compile("_(.+)--N")
 
-def read_data(input_file: Path, comp_file: Path, data_file_name="aggregate_fittings.h5"):
 
-    if input_file.is_dir():
-        input_file_list = input_file.rglob(data_file_name)
-        granule_data = pd.concat(map(_load_terms, input_file_list), ignore_index=True)
+def read_data(input_file: list[Path], data_file_name="aggregate_fittings.h5"):
+    """
+    Read and format the data in the given paths. If multiple files are uploaded it will concatenate them.
+    Args:
+        input_file (list[Path]): _description_
+        data_file_name (str, optional): _description_. Defaults to "aggregate_fittings.h5".
+
+    Returns:
+        _type_: _description_
+    """
+
+    if len(input_file) > 1:       
+        granule_data = pd.concat(map(_load_terms, input_file), ignore_index=True)
     else:
-        granule_data = _load_terms(input_file)
+        granule_data = _load_terms(input_file[0])
 
-    if comp_file != None:
-        if comp_file.is_dir():
-            comp_file_list = comp_file.rglob(data_file_name)
-            comp_data = pd.concat(map(_load_terms, comp_file_list), ignore_index=True)
-        else:
-            comp_data = _load_terms(comp_file)
-
-        sigma_diffs = []
-        for granule, comp in zip(granule_data.itertuples(),comp_data.itertuples()):
-            sigma_diffs.append(abs(granule.sigma - 4.0 * comp.sigma))    
-        granule_data = granule_data.assign(sigma_diff = sigma_diffs)
-
-        fitting_diffs = []
-        for granule, comp in zip(granule_data.itertuples(),comp_data.itertuples()):
-            fitting_diffs.append(comp.fitting_error - granule.fitting_error)
-    
-        granule_data = granule_data.assign(fitting_diff = fitting_diffs)
-
-    else:
-        granule_data["sigma_diff"] = 10000000.0
-        granule_data["fitting_diff"] = 10000000.0
+    granule_data["sigma_diff"] = 10000000.0
+    granule_data["fitting_diff"] = 10000000.0
 
     return granule_data
 
@@ -124,7 +115,6 @@ def _get_treament_type(im_path):
     if experiment_name.startswith("Caprin"):
         return "NaAs+Caprin1"
     raise ValueError("Unable to get experiment name.")
-
 
 def _convert_to_sec(path):
     time = re_time_stamp.findall(path)

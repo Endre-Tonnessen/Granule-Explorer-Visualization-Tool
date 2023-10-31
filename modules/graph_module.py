@@ -94,7 +94,7 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
 def graph_module_server(input: Inputs,
                         output: Outputs,
                         session: Session, 
-                        granule_data_reactive_value: reactive.Value[list[pd.DataFrame]], 
+                        granule_data_reactive_value: reactive.Value[pd.DataFrame], 
                         plot_function: Callable, 
                         plot_parameters: dict[dict[dict]]):
     
@@ -128,7 +128,7 @@ def graph_module_server(input: Inputs,
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
             return
       
-        granule_data_df: pd.DataFrame = granule_data_reactive_value.get()[0] # Call reactive value to get its contents
+        granule_data_df: pd.DataFrame = granule_data_reactive_value.get() # Call reactive value to get its contents
         return create_fig(input=input, 
                           granule_data_df=granule_data_df, 
                           plot_function=plot_function,
@@ -143,7 +143,7 @@ def graph_module_server(input: Inputs,
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
             return        
         
-        granule_data_df: pd.DataFrame = granule_data_reactive_value.get()[0] # Call reactive value to get its contents
+        granule_data_df: pd.DataFrame = granule_data_reactive_value.get() # Call reactive value to get its contents
         column_names: list[str] = granule_data_df.columns.to_list()
         filtered_column_names: list[str] = filter_columns(column_names)         # Remove blacklisted columns that should not be shown to user.
         column_alias_names: list[str] = columns_to_alias(filtered_column_names) # Get human readable names for df columns
@@ -197,7 +197,7 @@ def graph_module_server(input: Inputs,
                 return
         
         with io.BytesIO() as buf:
-            granule_data_df: pd.DataFrame = granule_data_reactive_value.get()[0]
+            granule_data_df: pd.DataFrame = granule_data_reactive_value.get()
             fig = create_download_figure(input=input, 
                                          granule_data_df=granule_data_df, 
                                          plot_function=plot_function, 
@@ -213,7 +213,7 @@ def graph_module_server(input: Inputs,
                 return
         
         with io.BytesIO() as buf:
-            granule_data_df: pd.DataFrame = granule_data_reactive_value.get()[0]
+            granule_data_df: pd.DataFrame = granule_data_reactive_value.get()
             fig = create_download_figure(input=input, 
                                          granule_data_df=granule_data_df, 
                                          plot_function=plot_function, 
