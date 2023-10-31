@@ -25,11 +25,11 @@ import plotting_tools.split_histogram as splth
 twoDHist_plot_input_options={
     'text_input': dict({
         "plot_title":dict({
-            'value':"defualt value", 
+            'value':"Surface Tension Error (N/m)", 
             'label':"Y-axis title"
         }),
         "row_title":dict({
-            'value':"N/m", 
+            'value':"Interfacial Tension (N/m)", 
             'label':"X-axis title"
         }),
     }),
@@ -68,11 +68,11 @@ twoDHist_plot_input_options={
 scatter_plot_input_options={
     'text_input': dict({
         "plot_title":dict({
-            'value':"defualt value", 
-            'label':"Y-axis title", 
+            'value':"Surface Tension Error (N/m)", 
+            'label':"Y-axis title"
         }),
         "row_title":dict({
-            'value':"N/m", 
+            'value':"Interfacial Tension (N/m)", 
             'label':"X-axis title"
         }),
     }),
@@ -109,11 +109,11 @@ scatter_plot_input_options={
 filter_plot_input_options={
     'text_input': dict({
         "plot_title":dict({
-            'value':"defualt value", 
-            'label':"Y-axis title", 
+            'value':"Surface Tension Error (N/m)", 
+            'label':"Y-axis title"
         }),
         "row_title":dict({
-            'value':"N/m", 
+            'value':"Interfacial Tension (N/m)", 
             'label':"X-axis title"
         }),
     }),
