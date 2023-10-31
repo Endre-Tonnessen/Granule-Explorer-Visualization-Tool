@@ -27,7 +27,8 @@ def create_download_figure(input: Inputs,
                            granule_data_df: pd.DataFrame, 
                            plot_function: Callable, 
                            plot_parameters: dict, 
-                           save_buffer: io.BytesIO):
+                           save_buffer: io.BytesIO,
+                           filetype: str):
     """Creates plot with ouput settings. Saves to given io buffer zone for download in browser.
 
     Args:
@@ -36,6 +37,7 @@ def create_download_figure(input: Inputs,
         plot_function (Callable): Function creating the plot
         plot_parameters (dict): user parameters passed on to the plot function 
         save_buffer (io.BytesIO): buffer the figure is save to for IO operations
+        filetype (str): Filetype of output plot. Either "svg" or "png"
 
     Returns:
         This function does not return anything.  
@@ -69,7 +71,7 @@ def create_download_figure(input: Inputs,
         plotKwargs = dict(bbox_inches="tight", pad_inches=padding)
 
     fig.tight_layout(pad=tl_padding)
-    fig.savefig(save_buffer, dpi=dpi, format=input['download_file_format'](), **plotKwargs)
+    fig.savefig(save_buffer, dpi=dpi, format=filetype, **plotKwargs)
 
 
 def filter_dataset(input: Inputs, granule_data_df: pd.DataFrame) -> pd.DataFrame:

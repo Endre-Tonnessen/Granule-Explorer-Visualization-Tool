@@ -42,7 +42,7 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
                 ui.row(),
                 
                 ui.page_bootstrap(ui.input_action_button("update_plot", "Update plot"),
-                                    # ui.download_button("download_plot", "Download Plot"),
+                                    # ui.download_button("download_plot_png", "Download Plot"),
                                     ui.input_action_button("modal_download", "Download")),
                 ui.hr(),
 
@@ -68,19 +68,19 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
                 x.ui.card(
                     x.ui.card_header("Dataset filters"),
                     ui.row( 
-                        ui.input_switch(id="sigma_filter_switch", label="Sigma >", width="170px", value=True),
+                        ui.input_switch(id="sigma_filter_switch", label="Surface Tension >", width="200px", value=True), # Sigma
                         ui.input_numeric(id="sigma_filter_input", label="", value=1e-10, step=1e-10, width="200px")
                     ),
                     ui.row(
-                        ui.input_switch(id="pass_rate_filter_switch", label="pass_rate >", width="170px", value=True),
+                        ui.input_switch(id="pass_rate_filter_switch", label="Pass Rate >", width="200px", value=True),
                         ui.input_numeric(id="pass_rate_filter_input", label="", value=0.6, step=0.1, width="200px")
                     ),
                     ui.row(
-                        ui.input_switch(id="fitting_error_filter_switch", label="fitting_error <", width="170px", value=True),
+                        ui.input_switch(id="fitting_error_filter_switch", label="Fitting Error <", width="200px", value=True),
                         ui.input_numeric(id="fitting_error_filter_input", label="", value=0.5, step=0.1, width="200px")
                     ),
                     ui.row(
-                        ui.input_switch(id="fitting_diff_filter_switch", label="fitting_diff >", width="170px", value=True),
+                        ui.input_switch(id="fitting_diff_filter_switch", label="Fitting diff >", width="200px", value=True),
                         ui.input_numeric(id="fitting_diff_filter_input", label="", value=0.03, step=0.01, width="200px")
                     ),
                 ),
@@ -135,7 +135,7 @@ def graph_module_server(input: Inputs,
                           plot_parameters=parse_plot_parameters())
         
     @reactive.Effect
-    def update_axies_select():
+    def update_axies_select(): # TODO: Default to the selected values for axis names.
         """
             Update axis selects with dataframe columns.
             Function is triggered when 'granule_data_reactive_value' is changed (a file is uploaded).
@@ -145,14 +145,20 @@ def graph_module_server(input: Inputs,
         
         granule_data_df: pd.DataFrame = granule_data_reactive_value.get()[0] # Call reactive value to get its contents
         column_names: list[str] = granule_data_df.columns.to_list()
-        filtered_column_names = filter_columns(column_names)                    # Remove blacklisted columns that should not be shown to user.
+        filtered_column_names: list[str] = filter_columns(column_names)         # Remove blacklisted columns that should not be shown to user.
         column_alias_names: list[str] = columns_to_alias(filtered_column_names) # Get human readable names for df columns
                
         for k,v in plot_parameters['select_input_dataset_columns'].items():
             ui.update_select(id=k,                                      # Update select elements with column aliases
                              choices=column_alias_names, 
                              selected=column_to_alias(v['selected']))   # Get human readable name for the current selected value
-    
+    @reactive.Effect()
+    def update_axis_names():
+        """Updates x and y-axis names based on selected columns #TODO: Add error handling for plots not using 'select_input_dataset_columns'. Will it fail if element not found?
+        """
+        ui.update_text(id='plot_title', value=input.plot_column())
+        ui.update_text(id='row_title', value=input.plot_row())
+
     @reactive.Effect
     @reactive.event(input.modal_download)
     def modal_download():
@@ -164,26 +170,28 @@ def graph_module_server(input: Inputs,
                       ui.input_numeric(id="download_figure_tl_padding", label="Tl padding", value=1.08, width="100px"),
                       ),
                 ui.column(6, 
-                      ui.input_select(id="download_file_format", choices=["svg", "png", "jpeg"], selected="svg", label="", width="100px"),
+                    #   ui.input_select(id="download_file_format", choices=["png", "svg", "jpeg"], selected="png", label="", width="100px"),
                       ui.input_switch(id="download_figure_despine_axis", label="Despine axis")
                       ),
             ),
-            ui.download_button("download_plot", "Download Plot"),
+            ui.download_button("download_plot_png", "Download png"),
+            ui.download_button("download_plot_svg", "Download svg"),
             title="Download config",
             easy_close=True,
             footer=None,
         )
         ui.modal_show(m)
 
-    @session.download(filename="data.svg")
-    async def download_plot():  
+    @session.download(filename="data.png")
+    async def download_plot_png():  
         """
             File download implemented by yielding bytes, in this case either all at
             once (the entire plot). Filename is determined in the @session.Download decorator ontop of function.
             This determines what the browser will name the downloaded file. 
 
             TODO: Find alternative approach allowing us to name the download programmatically. Currently it is a static name.    
-                    -> Might have to save plot to disk, then IO to user. Not ideal.        
+                    -> Might have to save plot to disk, then IO to user. Not ideal.  
+                    -> Just add two functions for svg and png.      
         """
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
                 return
@@ -194,7 +202,24 @@ def graph_module_server(input: Inputs,
                                          granule_data_df=granule_data_df, 
                                          plot_function=plot_function, 
                                          plot_parameters=parse_plot_parameters(),
-                                         save_buffer=buf)
+                                         save_buffer=buf,
+                                         filetype="png")
+            yield buf.getvalue()
+            plt.close(fig=fig)
+
+    @session.download(filename="plot.svg")
+    async def download_plot_svg():  
+        if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
+                return
+        
+        with io.BytesIO() as buf:
+            granule_data_df: pd.DataFrame = granule_data_reactive_value.get()[0]
+            fig = create_download_figure(input=input, 
+                                         granule_data_df=granule_data_df, 
+                                         plot_function=plot_function, 
+                                         plot_parameters=parse_plot_parameters(),
+                                         save_buffer=buf,
+                                         filetype="svg")
             yield buf.getvalue()
             plt.close(fig=fig)
 
@@ -206,9 +231,9 @@ def graph_module_server(input: Inputs,
 column_aliases = { 
                 "times":"Times(s)",
                 "sigma": "Interfacial Tension (N/m)",
-                "kappa_scale": "Bending Rigidity ($k_{\mathrm{B}}T$)",
+                "kappa_scale": "Bending Rigidity",
                 "sigma_err": "Surface Tension Error (N/m)",
-                "kappa_scale_err": "Bending Rigidity Error($k_{\mathrm{B}}T$)",
+                "kappa_scale_err": "Bending Rigidity Error",
                 "fitting_error": "Fitting Error",
                 "q_2_mag": "$|C_2|^2$",
                 "mean_radius":"Mean Radius",
