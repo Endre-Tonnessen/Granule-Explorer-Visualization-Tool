@@ -62,8 +62,10 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
         ui.row(
              ui.page_bootstrap(
                 *plot_input_text_ui_elements, # Unpack plot input ui elements
-                *plot_input_select_ui_elements
+                *plot_input_select_ui_elements,
+                ui.input_selectize(id="treatment_selectize_input", label="Select treatments", choices=[""], multiple=True, width="200px")
             ),
+            # Filter
             x.ui.layout_column_wrap("450px",
                 x.ui.card(
                     x.ui.card_header("Dataset filters"),
@@ -119,7 +121,7 @@ def graph_module_server(input: Inputs,
     
     @output
     @render.plot(alt="Plot")
-    @reactive.event(input.update_plot, granule_data_reactive_value)
+    @reactive.event(input.update_plot)
     def plot():
         """
             Renders a new plot based on the given plot function and its plot-parameters.
@@ -153,11 +155,24 @@ def graph_module_server(input: Inputs,
                              choices=column_alias_names, 
                              selected=column_to_alias(v['selected']))   # Get human readable name for the current selected value
     @reactive.Effect()
-    def update_axis_names():
+    def update_axis_name_text_input():
         """Updates x and y-axis names based on selected columns #TODO: Add error handling for plots not using 'select_input_dataset_columns'. Will it fail if element not found?
         """
+        if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
+            return 
         ui.update_text(id='plot_title', value=input.plot_column())
         ui.update_text(id='row_title', value=input.plot_row())
+
+    @reactive.Effect()
+    @reactive.event(granule_data_reactive_value)
+    def update_treatment_selectize_input():
+        if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
+            return 
+        granule_data_df: pd.DataFrame = granule_data_reactive_value.get() # Call reactive value to get its contents
+        
+        choices: list[str] = granule_data_df['treatment'].unique().tolist()
+        # print(choices)
+        ui.update_selectize(id="treatment_selectize_input", choices=choices, selected=choices)
 
     @reactive.Effect
     @reactive.event(input.modal_download)

@@ -19,7 +19,15 @@ def create_fig(input: Inputs,
     Returns:
         matplotlib.figure.Figure: Figure
     """
+
+    selected_treatments: list[str] = input['treatment_selectize_input']()
+    # Filter data based on selected treatments
+    granule_data_df = granule_data_df[granule_data_df["treatment"].isin(selected_treatments)]
+
+    # Filter data based on user selected filter
     granule_data_df = filter_dataset(input, granule_data_df)
+ 
+
     fig = plot_function(granule_data=granule_data_df, **plot_parameters)
     return fig
 
