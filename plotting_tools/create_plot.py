@@ -60,6 +60,9 @@ def create_download_figure(input: Inputs,
     tl_padding = input['download_figure_tl_padding']()
     despine = input['download_figure_despine_axis']()
     dpi = input['download_figure_dpi']()
+    plot_height = input['download_figure_height_inches']()
+    plot_width = input['download_figure_width_inches']()
+    
 
     def despine_axis(ax):
         """Remove the top and right axis.
@@ -79,6 +82,7 @@ def create_download_figure(input: Inputs,
         plotKwargs = dict(bbox_inches="tight", pad_inches=padding)
 
     fig.tight_layout(pad=tl_padding)
+    fig.set_size_inches(plot_width, plot_height)
     fig.savefig(save_buffer, dpi=dpi, format=filetype, **plotKwargs)
 
 

@@ -82,6 +82,8 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
                             ui.input_switch(id="fitting_diff_filter_switch", label="Fitting diff >", width="200px", value=True),
                             ui.input_numeric(id="fitting_diff_filter_input", label="", value=0.03, step=0.01, width="200px")
                         ),
+                        # max_height="400px",
+                        fill=False
                     ),
 
                     x.ui.card(
@@ -129,7 +131,7 @@ def graph_module_server(input: Inputs,
     
     @output
     @render.plot(alt="Plot")
-    @reactive.event(input.update_plot)
+    @reactive.event(input.update_plot, input.treatment_selectize_input) #TODO: Look into way to auto update plot when file is uploaded. Race condition with treatment selectize, if empty -> empty plot
     def plot():
         """
             Renders a new plot based on the given plot function and its plot-parameters.
@@ -162,7 +164,8 @@ def graph_module_server(input: Inputs,
             ui.update_select(id=k,                                      # Update select elements with column aliases
                              choices=column_alias_names, 
                              selected=column_to_alias(v['selected']))   # Get human readable name for the current selected value
-    @reactive.Effect()
+    
+    @reactive.Effect
     def update_axis_name_text_input():
         """Updates x and y-axis names based on selected columns #TODO: Add error handling for plots not using 'select_input_dataset_columns'. Will it fail if element not found?
         """
@@ -171,7 +174,7 @@ def graph_module_server(input: Inputs,
         ui.update_text(id='plot_title', value=input.plot_column())
         ui.update_text(id='row_title', value=input.plot_row())
 
-    @reactive.Effect()
+    @reactive.Effect
     @reactive.event(granule_data_reactive_value)
     def update_treatment_selectize_input():
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
@@ -194,8 +197,10 @@ def graph_module_server(input: Inputs,
                       ),
                 ui.column(6, 
                     #   ui.input_select(id="download_file_format", choices=["png", "svg", "jpeg"], selected="png", label="", width="100px"),
-                      ui.input_switch(id="download_figure_despine_axis", label="Despine axis")
-                      ),
+                      ui.input_switch(id="download_figure_despine_axis", label="Despine axis"),
+                      ui.input_numeric(id="download_figure_height_inches", label="Height (inches)", value=7, width="100px"),
+                      ui.input_numeric(id="download_figure_width_inches", label="Weight (inches)", value=10, width="100px"),
+                ),
             ),
             ui.download_button("download_plot_png", "Download png"),
             ui.download_button("download_plot_svg", "Download svg"),
