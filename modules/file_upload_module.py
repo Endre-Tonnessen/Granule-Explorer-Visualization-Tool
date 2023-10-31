@@ -28,7 +28,6 @@ def file_upload_module_server(input: Inputs, output: Outputs, session: Session) 
         # Get path to each uploaded file
         file_paths: list[Path] = [Path(f[i]["datapath"]) for i in range(len(f))]
         df = read_data(file_paths)
-        # print(df['treatment'])
         uploaded_file.set(df)
     
     return uploaded_file

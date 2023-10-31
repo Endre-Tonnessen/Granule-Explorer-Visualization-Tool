@@ -431,7 +431,7 @@ def pair_plot(granule_data: pd.DataFrame, out_dir: Path):
 
 def overlap_hist(
     plot_column,
-    split_column,
+    split_column, # Treatment
     plot_label,
     split_label,
     granule_data: pd.DataFrame,

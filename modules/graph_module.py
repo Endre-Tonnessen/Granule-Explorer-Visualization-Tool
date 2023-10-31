@@ -47,9 +47,10 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
                 ui.hr(),
 
                 # Unpack ui elemets from list
+                ui.input_selectize(id="treatment_selectize_input", label="Select treatments", choices=[""], multiple=True, width="200px"),
                 *plot_input_select_axis_ui_elements,
                 *plot_input_switch_ui_elements,
-                *plot_input_numeric_ui_elements
+                
             ),
             ui.column(8,
                 x.ui.card(
@@ -60,33 +61,40 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
             )
     ),
         ui.row(
-             ui.page_bootstrap(
-                *plot_input_text_ui_elements, # Unpack plot input ui elements
-                *plot_input_select_ui_elements,
-                ui.input_selectize(id="treatment_selectize_input", label="Select treatments", choices=[""], multiple=True, width="200px")
-            ),
-            # Filter
-            x.ui.layout_column_wrap("450px",
-                x.ui.card(
-                    x.ui.card_header("Dataset filters"),
-                    ui.row( 
-                        ui.input_switch(id="sigma_filter_switch", label="Surface Tension >", width="200px", value=True), # Sigma
-                        ui.input_numeric(id="sigma_filter_input", label="", value=1e-10, step=1e-10, width="200px")
+            ui.row(
+                # Filter
+                x.ui.layout_column_wrap("450px",
+                    x.ui.card(
+                        x.ui.card_header("Dataset filters"),
+                        ui.row( 
+                            ui.input_switch(id="sigma_filter_switch", label="Surface Tension >", width="200px", value=True), # Sigma
+                            ui.input_numeric(id="sigma_filter_input", label="", value=1e-10, step=1e-10, width="200px")
+                        ),
+                        ui.row(
+                            ui.input_switch(id="pass_rate_filter_switch", label="Pass Rate >", width="200px", value=True),
+                            ui.input_numeric(id="pass_rate_filter_input", label="", value=0.6, step=0.1, width="200px")
+                        ),
+                        ui.row(
+                            ui.input_switch(id="fitting_error_filter_switch", label="Fitting Error <", width="200px", value=True),
+                            ui.input_numeric(id="fitting_error_filter_input", label="", value=0.5, step=0.1, width="200px")
+                        ),
+                        ui.row(
+                            ui.input_switch(id="fitting_diff_filter_switch", label="Fitting diff >", width="200px", value=True),
+                            ui.input_numeric(id="fitting_diff_filter_input", label="", value=0.03, step=0.01, width="200px")
+                        ),
                     ),
-                    ui.row(
-                        ui.input_switch(id="pass_rate_filter_switch", label="Pass Rate >", width="200px", value=True),
-                        ui.input_numeric(id="pass_rate_filter_input", label="", value=0.6, step=0.1, width="200px")
-                    ),
-                    ui.row(
-                        ui.input_switch(id="fitting_error_filter_switch", label="Fitting Error <", width="200px", value=True),
-                        ui.input_numeric(id="fitting_error_filter_input", label="", value=0.5, step=0.1, width="200px")
-                    ),
-                    ui.row(
-                        ui.input_switch(id="fitting_diff_filter_switch", label="Fitting diff >", width="200px", value=True),
-                        ui.input_numeric(id="fitting_diff_filter_input", label="", value=0.03, step=0.01, width="200px")
-                    ),
-                ),
-                
+
+                    x.ui.card(
+                        x.ui.card_header("Plot parameters"),
+                        ui.page_bootstrap(
+                            *plot_input_text_ui_elements, # Unpack plot input ui elements
+                            *plot_input_select_ui_elements,
+                            *plot_input_numeric_ui_elements,
+                        ),
+                    )
+                )
+             
+            
             )
         )
     )
