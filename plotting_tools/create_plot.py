@@ -31,8 +31,6 @@ def create_fig(input: Inputs,
  
     # If selected_treatments is not a tuple, add "plt_group" paramter. 
     # Telling plot funtion to only group by the given experiment. 
-    print(selected_treatments)
-    print(type(selected_treatments))
     if type(selected_treatments) is not tuple: 
         fig = plot_function(granule_data=granule_data_df, 
                             group_by="treatment",
