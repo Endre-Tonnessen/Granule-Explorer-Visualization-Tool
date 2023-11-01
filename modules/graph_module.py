@@ -180,8 +180,16 @@ def graph_module_server(input: Inputs,
         """
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
             return 
-        ui.update_text(id='plot_title', value=input.plot_column())
-        ui.update_text(id='row_title', value=input.plot_row())
+        
+        # Check for UI element existing, then update with current selected value
+        if input.plot_title.is_set():
+            ui.update_text(id='plot_title', value=input.plot_column())
+        if input.row_title.is_set():
+            ui.update_text(id='row_title', value=input.plot_row())
+        if input.bin_title.is_set():
+            ui.update_text(id='bin_title', value=input.bin_column())
+        if input.plot_label.is_set():
+            ui.update_text(id='plot_label', value=input.plot_column())
 
     @reactive.Effect 
     # @reactive.event(granule_data_reactive_value)
