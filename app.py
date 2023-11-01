@@ -57,8 +57,8 @@ twoDHist_plot_input_options={
     'select_input_dataset_columns':dict({
         # Select inputs that are automatically populated with the columns of the dataset
         # Parameters are ui.input_select() parameters
-        "plot_column":dict({'label':'Y-axis title', 'choices':['sigma_err'], 'selected':"sigma_err"}),
-        "plot_row":dict({'label':'X-axis title', 'choices':['sigma'], 'selected':"sigma"})
+        "plot_column":dict({'label':'Y-axis', 'choices':['Surface Tension Error (N/m)'], 'selected':"Surface Tension Error (N/m)"}),
+        "plot_row":dict({'label':'X-axis', 'choices':['Interfacial Tension (N/m)'], 'selected':"Interfacial Tension (N/m)"})
     }),
     'static_input':dict({
         #Inputs that will not change. These will not create ui compenents and are only used server side.
@@ -98,8 +98,8 @@ scatter_plot_input_options={
     'select_input_dataset_columns':dict({
         # Select inputs that are automatically populated with the columns of the dataset
         # Parameters are ui.input_select() parameters
-        "plot_column":dict({'label':'Y-axis title', 'choices':['sigma_err'], 'selected':"sigma_err"}),
-        "plot_row":dict({'label':'X-axis title', 'choices':['sigma'], 'selected':"sigma"})
+        "plot_column":dict({'label':'Y-axis', 'choices':['Surface Tension Error (N/m)'], 'selected':"Surface Tension Error (N/m)"}),
+        "plot_row":dict({'label':'X-axis', 'choices':['Interfacial Tension (N/m)'], 'selected':"Interfacial Tension (N/m)"})
     }),
     'static_input':dict({
         #Inputs that will not change. These will not create ui compenents and are only used server side.
@@ -145,8 +145,8 @@ filter_plot_input_options={
     'select_input_dataset_columns':dict({
         # Select inputs that are automatically populated with the columns of the dataset
         # Parameters are ui.input_select() parameters
-        "plot_column":dict({'label':'Y-axis title', 'choices':['sigma_err'], 'selected':"sigma_err"}),
-        "plot_row":dict({'label':'X-axis title', 'choices':['sigma'], 'selected':"sigma"})
+        "plot_column":dict({'label':'Y-axis', 'choices':['Surface Tension Error (N/m)'], 'selected':"Surface Tension Error (N/m)"}),
+        "plot_row":dict({'label':'X-axis', 'choices':['Interfacial Tension (N/m)'], 'selected':"Interfacial Tension (N/m)"})
     }),
     'static_input':dict({
         #Inputs that will not change. These will not create ui compenents and are only used server side.

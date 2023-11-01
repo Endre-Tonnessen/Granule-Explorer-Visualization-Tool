@@ -131,7 +131,7 @@ def graph_module_server(input: Inputs,
     
     @output
     @render.plot(alt="Plot")
-    @reactive.event(input.update_plot, input.treatment_selectize_input) #TODO: Look into way to auto update plot when file is uploaded. Race condition with treatment selectize, if empty -> empty plot
+    @reactive.event(input.update_plot, input.treatment_selectize_input) 
     def plot():
         """
             Renders a new plot based on the given plot function and its plot-parameters.
@@ -147,7 +147,7 @@ def graph_module_server(input: Inputs,
                           plot_parameters=parse_plot_parameters())
         
     @reactive.Effect
-    def update_axies_select(): # TODO: Default to the selected values for axis names.
+    def update_axies_select(): 
         """
             Update axis selects with dataframe columns.
             Function is triggered when 'granule_data_reactive_value' is changed (a file is uploaded).
@@ -174,8 +174,8 @@ def graph_module_server(input: Inputs,
         ui.update_text(id='plot_title', value=input.plot_column())
         ui.update_text(id='row_title', value=input.plot_row())
 
-    @reactive.Effect
-    @reactive.event(granule_data_reactive_value)
+    @reactive.Effect 
+    # @reactive.event(granule_data_reactive_value)
     def update_treatment_selectize_input():
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
             return 
@@ -198,8 +198,8 @@ def graph_module_server(input: Inputs,
                 ui.column(6, 
                     #   ui.input_select(id="download_file_format", choices=["png", "svg", "jpeg"], selected="png", label="", width="100px"),
                       ui.input_switch(id="download_figure_despine_axis", label="Despine axis"),
-                      ui.input_numeric(id="download_figure_height_inches", label="Height (inches)", value=7, width="100px"),
-                      ui.input_numeric(id="download_figure_width_inches", label="Weight (inches)", value=10, width="100px"),
+                      ui.input_numeric(id="download_figure_height_inches", label="Height (inches)", value=5, width="100px"),
+                      ui.input_numeric(id="download_figure_width_inches", label="Weight (inches)", value=8, width="100px"),
                 ),
             ),
             ui.download_button("download_plot_png", "Download png"),
@@ -210,16 +210,12 @@ def graph_module_server(input: Inputs,
         )
         ui.modal_show(m)
 
-    @session.download(filename="data.png")
+    @session.download(filename="plot.png")
     async def download_plot_png():  
         """
             File download implemented by yielding bytes, in this case either all at
             once (the entire plot). Filename is determined in the @session.Download decorator ontop of function.
-            This determines what the browser will name the downloaded file. 
-
-            TODO: Find alternative approach allowing us to name the download programmatically. Currently it is a static name.    
-                    -> Might have to save plot to disk, then IO to user. Not ideal.  
-                    -> Just add two functions for svg and png.      
+            This determines what the browser will name the downloaded file.     
         """
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
                 return
