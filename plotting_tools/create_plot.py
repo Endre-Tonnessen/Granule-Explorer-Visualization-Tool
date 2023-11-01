@@ -28,7 +28,7 @@ def create_fig(input: Inputs,
     granule_data_df = filter_dataset(input, granule_data_df)
  
 
-    fig = plot_function(granule_data=granule_data_df, **plot_parameters)
+    fig = plot_function(granule_data=granule_data_df, group_by="treatment", save_png=False, **plot_parameters)
     return fig
 
 def create_download_figure(input: Inputs, 

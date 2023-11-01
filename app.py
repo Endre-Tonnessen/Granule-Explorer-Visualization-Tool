@@ -20,7 +20,7 @@ from modules.graph_module import graph_module_ui, graph_module_server
 from modules.file_upload_module import file_upload_module_ui, file_upload_module_server
 
 # Plotting tools
-import plotting_tools.split_histogram as splth
+import plotting_tools.split_histograms as splth
 
 twoDHist_plot_input_options={
     'text_input': dict({
@@ -112,7 +112,7 @@ filter_plot_input_options={
             'value':"Surface Tension Error (N/m)", 
             'label':"Y-axis title"
         }),
-        "row_title":dict({
+        "bin_title":dict({
             'value':"Interfacial Tension (N/m)", 
             'label':"X-axis title"
         }),
@@ -129,12 +129,16 @@ filter_plot_input_options={
             'value':True, 
             'label':'legend'
         }),
-        'log_scale':dict({
-            'value':True, 
+        'x_log_scale':dict({
+            'value':False, 
+            'label':'log_scale'
+        }),
+        'y_log_scale':dict({
+            'value':False, 
             'label':'log_scale'
         }),
         'errors':dict({
-            'value':True, 
+            'value':False, 
             'label':'errors'
         }),
     }),
@@ -146,13 +150,59 @@ filter_plot_input_options={
         # Select inputs that are automatically populated with the columns of the dataset
         # Parameters are ui.input_select() parameters
         "plot_column":dict({'label':'Y-axis', 'choices':['Surface Tension Error (N/m)'], 'selected':"Surface Tension Error (N/m)"}),
-        "plot_row":dict({'label':'X-axis', 'choices':['Interfacial Tension (N/m)'], 'selected':"Interfacial Tension (N/m)"})
+        "bin_column":dict({'label':'X-axis', 'choices':['Interfacial Tension (N/m)'], 'selected':"Interfacial Tension (N/m)"})
     }),
     'static_input':dict({
         #Inputs that will not change. These will not create ui compenents and are only used server side.
     }),
 }
 
+overlap_hist_plot_input_options={
+    'text_input': dict({
+        # "plot_title":dict({
+        #     'value':"Surface Tension Error (N/m)", 
+        #     'label':"Y-axis title"
+        # }),
+        "plot_label":dict({
+            'value':"Interfacial Tension (N/m)", 
+            'label':"X-axis title"
+        }),
+    }),
+    'numeric_input': dict({
+        "n_bins":dict({
+            'value':20, 
+            'label':"Nr bins"
+        })
+    }),
+    'bool_input':dict({
+        #Sliders and such
+        'legend':dict({
+            'value':False, 
+            'label':'legend'
+        }),
+        'log_scale':dict({
+            'value':True, 
+            'label':'log_scale'
+        }),
+        'density':dict({
+            'value':False, 
+            'label':'density'
+        }),
+    }),
+    'select_input':dict({
+        # Custom select inputs. Parameters are ui.input_select() parameters
+        # "bin_type":dict({'label':'Bin type', 'choices':['count', 'radius', 'log'], 'selected':"count"}),
+    }),
+    'select_input_dataset_columns':dict({
+        # Select inputs that are automatically populated with the columns of the dataset
+        # Parameters are ui.input_select() parameters
+        "plot_column":dict({'label':'X-axis', 'choices':['Surface Tension Error (N/m)'], 'selected':"Surface Tension Error (N/m)"}),
+        # "plot_row":dict({'label':'X-axis', 'choices':['Interfacial Tension (N/m)'], 'selected':"Interfacial Tension (N/m)"})
+    }),
+    'static_input':dict({
+        #Inputs that will not change. These will not create ui compenents and are only used server side.
+    }),
+}
 # UI
 app_ui = ui.page_fluid(
         # shinyswatch.theme.spacelab(),
@@ -165,6 +215,9 @@ app_ui = ui.page_fluid(
             ui.panel_title("Granule Explorer Visualization Tool", "Granule Explorer"),
             ui.navset_tab(
                 # Nav elements
+                ui.nav("Overlap Hist", 
+                    graph_module_ui(id="overlap_hist", label="Overlap Histogram", plot_input_options=overlap_hist_plot_input_options)
+                ),
                 ui.nav("Scatter Plot", 
                     graph_module_ui(id="scatteplot", label="Scatter plot", plot_input_options=scatter_plot_input_options)
                 ),
@@ -197,6 +250,7 @@ def server(input, output, session):
     granule_data_reactive_value: reactive.Value[list[pd.DataFrame]] = file_upload_module_server("global_file_upload")
 
     # Graph modules
+    graph_module_server(id="overlap_hist", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.overlap_hist, plot_parameters=overlap_hist_plot_input_options) # Pass data to graph module
     graph_module_server(id="scatteplot", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.scatter_plot, plot_parameters=scatter_plot_input_options) # Pass data to graph module
     graph_module_server(id="2dhistogram", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.histogram2D, plot_parameters=twoDHist_plot_input_options) # Pass data to graph module
     graph_module_server(id="filter_plot", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.filter_plot, plot_parameters=filter_plot_input_options) # Pass data to graph module

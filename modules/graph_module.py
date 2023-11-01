@@ -6,7 +6,7 @@ import shiny.experimental as x
 import io
 from typing import Callable
 
-from plotting_tools.split_histogram import filter_plot 
+from plotting_tools.split_histograms import filter_plot 
 from plotting_tools.create_plot import create_download_figure, create_fig
 
 @module.ui
