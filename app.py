@@ -23,6 +23,7 @@ from modules.file_upload_module import file_upload_module_ui, file_upload_module
 import plotting_tools.split_histograms as splth
 
 twoDHist_plot_input_options={
+    'allow_multiple_experiments':False,
     'text_input': dict({
         "plot_title":dict({
             'value':"Surface Tension Error (N/m)", 
@@ -37,7 +38,7 @@ twoDHist_plot_input_options={
     'bool_input':dict({
         #Sliders and such
         'legend':dict({
-            'value':True, 
+            'value':False, 
             'label':'legend'
         }),
         'log_scaleX':dict({
@@ -66,6 +67,7 @@ twoDHist_plot_input_options={
 }
     
 scatter_plot_input_options={
+    'allow_multiple_experiments':False,
     'text_input': dict({
         "plot_title":dict({
             'value':"Surface Tension Error (N/m)", 
@@ -107,6 +109,7 @@ scatter_plot_input_options={
 }
 
 filter_plot_input_options={
+    'allow_multiple_experiments':False,
     'text_input': dict({
         "plot_title":dict({
             'value':"Surface Tension Error (N/m)", 
@@ -158,6 +161,7 @@ filter_plot_input_options={
 }
 
 overlap_hist_plot_input_options={
+    'allow_multiple_experiments':True, # Allow user to select mutiple experiment
     'text_input': dict({
         # "plot_title":dict({
         #     'value':"Surface Tension Error (N/m)", 

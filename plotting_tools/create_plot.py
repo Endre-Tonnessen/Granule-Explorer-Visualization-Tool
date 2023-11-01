@@ -2,7 +2,7 @@ import pandas as pd
 from shiny import App, Inputs, Outputs, Session, module, render, ui, reactive
 import io
 import matplotlib.pyplot as plt
-from typing import Callable
+from typing import Callable, Union
 
 def create_fig(input: Inputs, 
                granule_data_df: pd.DataFrame, 
@@ -19,16 +19,32 @@ def create_fig(input: Inputs,
     Returns:
         matplotlib.figure.Figure: Figure
     """
+    # If multiple experiments are selected, selectize will return a list of strings. If only 1 experiment, then just one str
+    # Corresponds to selectizes paramter "multiple" being True or False.
+    selected_treatments: tuple[str] | str = input['treatment_selectize_input']()
 
-    selected_treatments: list[str] = input['treatment_selectize_input']()
-    # Filter data based on selected treatments
-    granule_data_df = granule_data_df[granule_data_df["treatment"].isin(selected_treatments)]
+    # Filter data based on selected treatments # TODO: This is now done in the plotting function?
+    # granule_data_df = granule_data_df[granule_data_df["treatment"].isin(selected_treatments)]
 
     # Filter data based on user selected filter
     granule_data_df = filter_dataset(input, granule_data_df)
  
-
-    fig = plot_function(granule_data=granule_data_df, group_by="treatment", save_png=False, **plot_parameters)
+    # If selected_treatments is not a tuple, add "plt_group" paramter. 
+    # Telling plot funtion to only group by the given experiment. 
+    print(selected_treatments)
+    print(type(selected_treatments))
+    if type(selected_treatments) is not tuple: 
+        fig = plot_function(granule_data=granule_data_df, 
+                            group_by="treatment",
+                            plot_group=selected_treatments, 
+                            save_png=False, 
+                            **plot_parameters)
+    else: # If multiple experiments, omit plot_group parameter. Used for the overlap_hist plot.
+        granule_data_df = granule_data_df[granule_data_df["treatment"].isin(selected_treatments)]
+        fig = plot_function(granule_data=granule_data_df, 
+                            group_by="treatment", 
+                            save_png=False, 
+                            **plot_parameters)
     return fig
 
 def create_download_figure(input: Inputs, 

@@ -36,6 +36,13 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
     for k, v in plot_input_options['numeric_input'].items():
         plot_input_numeric_ui_elements.append(ui.input_numeric(id=k, **v))
 
+    if plot_input_options['allow_multiple_experiments']:
+        # TODO: Add config option for restricting amount of experiments (treatments) that are allowed to be selected at ones
+        #     -> multiple=True, just turn this to False?
+        allow_multiple_experiments = True
+    else:
+        allow_multiple_experiments = False
+        
     return ui.row(
         ui.row(
             ui.column(4,
@@ -47,7 +54,7 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
                 ui.hr(),
 
                 # Unpack ui elemets from list
-                ui.input_selectize(id="treatment_selectize_input", label="Select treatments", choices=[""], multiple=True, width="200px"),
+                ui.input_selectize(id="treatment_selectize_input", label="Select treatments", choices=[""], multiple=allow_multiple_experiments, width="200px"),
                 *plot_input_select_axis_ui_elements,
                 *plot_input_switch_ui_elements,
                 
@@ -120,6 +127,8 @@ def graph_module_server(input: Inputs,
         plot_parameters_from_user_input = dict()
         # Update user input values from corresponding ui input elements. k_2 is the id for each input in ui.
         for k, _ in plot_parameters.items():
+            if k == 'allow_multiple_experiments': # Logic for graph_module_ui(). Skip, no need to pass on to plot() function.
+                continue
             for k_2, v_2 in plot_parameters[k].items():
                 if k == "static_input": # If static value, no need to get it from ui
                     plot_parameters_from_user_input[k_2] = v_2['value']

@@ -698,9 +698,8 @@ def scatter_plot(
 
     fig, ax = create_axes(1, fig_width=8.3 / 2.5, aspect=1)
     # print(granule_data.columns)
-    # my_filter = f'{group_by} == "{plot_group}"'
-    # granule_data = granule_data.query(my_filter).copy()   
-
+    my_filter = f'{group_by} == "{plot_group}"'
+    granule_data = granule_data.query(my_filter).copy()   
 
     sorted_granules = granule_data.sort_values(by=['fitting_error'],ascending=False)
     ax.scatter(plot_row,plot_column,c="fitting_error",
