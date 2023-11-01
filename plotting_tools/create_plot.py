@@ -10,17 +10,25 @@ def create_fig(input: Inputs,
                plot_parameters: dict) -> plt.figure:
     """Based on given data, graph function and graph parameters, returns resulting figure from the filtered dataset.
 
-    Args:
-        input (Inputs): Shiny variable containing user input
-        granule_data_df (pd.DataFrame): Data used in plot creation
-        plot_function (Callable): Function creating the plot
-        plot_parameters (dict): user parameters passed on to the plot function 
+    Parameters
+    ----------
+    input: Inputs
+        Shiny variable containing user input
+
+    granule_data_df: pd.DataFrame
+        Data used in plot creation
+
+    plot_function: Callable
+        Function creating the plot
+
+    plot_parameters: dict
+        user parameters passed on to the plot function 
 
     Returns:
-        matplotlib.figure.Figure: Figure
+        A matplotlib figure: matplotlib.figure.Figure
     """
     # If multiple experiments are selected, selectize will return a list of strings. If only 1 experiment, then just one str
-    # Corresponds to selectizes paramter "multiple" being True or False.
+    # Corresponds to selectizes parameter "multiple" being True or False.
     selected_treatments: tuple[str] | str = input['treatment_selectize_input']()
 
     # Filter data based on selected treatments # TODO: This is now done in the plotting function?
@@ -29,18 +37,18 @@ def create_fig(input: Inputs,
     # Filter data based on user selected filter
     granule_data_df = filter_dataset(input, granule_data_df)
  
-    # If selected_treatments is not a tuple, add "plt_group" paramter. 
+    # If selected_treatments is not a tuple, add "plit_group" parameter. 
     # Telling plot funtion to only group by the given experiment. 
     if type(selected_treatments) is not tuple: 
         fig = plot_function(granule_data=granule_data_df, 
-                            group_by="treatment",
+                            group_by="treatment", # TODO: Change to 'experiment' to support the new format of aggregate data files
                             plot_group=selected_treatments, 
                             save_png=False, 
                             **plot_parameters)
     else: # If multiple experiments, omit plot_group parameter. Used for the overlap_hist plot.
         granule_data_df = granule_data_df[granule_data_df["treatment"].isin(selected_treatments)]
         fig = plot_function(granule_data=granule_data_df, 
-                            group_by="treatment", 
+                            group_by="treatment", # TODO: Change to 'experiment' to support the new format of aggregate data files
                             save_png=False, 
                             **plot_parameters)
     return fig
@@ -51,17 +59,31 @@ def create_download_figure(input: Inputs,
                            plot_parameters: dict, 
                            save_buffer: io.BytesIO,
                            filetype: str):
-    """Creates plot with ouput settings. Saves to given io buffer zone for download in browser.
+    """
+    Creates plot with ouput settings. Saves to given io buffer zone for download in browser.
 
-    Args:
-        input (Inputs): Shiny variable containing user input
-        granule_data_df (pd.DataFrame): Data used in plot creation
-        plot_function (Callable): Function creating the plot
-        plot_parameters (dict): user parameters passed on to the plot function 
-        save_buffer (io.BytesIO): buffer the figure is save to for IO operations
-        filetype (str): Filetype of output plot. Either "svg" or "png"
+    Parameters
+    ----------
+    input: Inputs 
+        Shiny variable containing user input
+    
+    granule_data_df: pd.DataFrame
+        Data used in plot creation
+    
+    plot_function: Callable
+        Function creating the plot
+    
+    plot_parameters: dict
+        user parameters passed on to the plot function 
+    
+    save_buffer: io.BytesIO
+        buffer the figure is save to for IO operations
+    
+    filetype: str
+        Filetype of output plot. Either "svg" or "png"
 
-    Returns:
+    Returns
+    -------
         This function does not return anything.  
         Its side-effect is saving the created figure in the bytes buffer.
     """
@@ -69,7 +91,7 @@ def create_download_figure(input: Inputs,
                      granule_data_df=granule_data_df, 
                      plot_function=plot_function, 
                      plot_parameters=plot_parameters)
-    # Get user settings
+    # Get user input from UI
     padding = input['download_figure_padding']()
     tl_padding = input['download_figure_tl_padding']()
     despine = input['download_figure_despine_axis']()
@@ -101,13 +123,20 @@ def create_download_figure(input: Inputs,
 
 
 def filter_dataset(input: Inputs, granule_data_df: pd.DataFrame) -> pd.DataFrame:
-    """Filters given dataset based on user selected values.
-       Returns a new Dataframe.
-    Args:
-        input (Inputs): Shiny variable containing user input
-        granule_data_df (pd.DataFrame): Dataframe to filter
+    """
+    Filters given dataset based on user selected values.
+    Returns a new Dataframe.
+    
+    Parameters
+    ----------
+    input: Inputs
+        Shiny variable containing user input
 
-    Returns:
+    granule_data_df: pd.DataFrame
+        Dataframe to filter
+
+    Returns
+    -------
         pd.DataFrame: Filtered dataset
     """
     # Get dataset filters and return filtered data #TODO: Clean up this prototype code block
