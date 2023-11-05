@@ -11,11 +11,18 @@ from shiny.types import FileInfo
 @module.ui
 def file_upload_module_ui():
     return (ui.input_file("graunle_aggregate_data", "Upload granule data", accept=[".h5"], multiple=True),
-            ui.input_file("graunle_image_data", "Upload image data", accept=[".ims"], multiple=False))
+            ui.input_file("graunle_image_data", "Upload image data", accept=[".ims"], multiple=False),
+            ui.hr(),
+            )
         
 @module.server
 def file_upload_module_server(input: Inputs, output: Outputs, session: Session) -> reactive.Value[pd.DataFrame]:
     uploaded_file = reactive.Value()
+    ui.notification_show(id="upload_to_begin", ui="Upload data to begin!", type="message", duration=100000, close_button=False)
+    ui.notification_show(id="upload_to_begin1", ui="", type="default", duration=100000, close_button=False)
+    ui.notification_show(id="upload_to_begin2", ui="", type="default", duration=100000, close_button=False)
+    ui.notification_show(id="upload_to_begin3", ui="", type="default", duration=100000, close_button=False)
+    ui.notification_show(id="upload_to_begin4", ui="", type="default", duration=100000, close_button=False)
 
     @reactive.Effect
     @reactive.event(input.graunle_aggregate_data)
@@ -24,6 +31,13 @@ def file_upload_module_server(input: Inputs, output: Outputs, session: Session) 
             Reads and formats the uploaded .h5 files. 
             Sets the results to the reactive value container.
         """
+        ui.notification_remove(id="upload_to_begin")
+        ui.notification_remove(id="upload_to_begin1")
+        ui.notification_remove(id="upload_to_begin2")
+        ui.notification_remove(id="upload_to_begin3")
+        ui.notification_remove(id="upload_to_begin4")
+        ui.notification_remove(id="upload_to_begin5")
+
         f: list[FileInfo] = input.graunle_aggregate_data()
         # Get path to each uploaded file
         file_paths: list[Path] = [Path(f[i]["datapath"]) for i in range(len(f))]
