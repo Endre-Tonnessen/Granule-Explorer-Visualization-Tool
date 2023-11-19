@@ -30,28 +30,26 @@ def create_fig(input: Inputs,
     """
     # If multiple experiments are selected, selectize will return a list of strings. If only 1 experiment, then just one str
     # Corresponds to selectizes parameter "multiple" being True or False.
-    selected_treatments: tuple[str] | str = input['treatment_selectize_input']()
-
-    # Filter data based on selected treatments # TODO: This is now done in the plotting function?
-    # granule_data_df = granule_data_df[granule_data_df["treatment"].isin(selected_treatments)]
+    selected_experiments: tuple[str] | str = input['experiment_selectize_input']()
 
     # Filter data based on user selected filter
     granule_data_df = filter_dataset(input, granule_data_df)
  
-    # If selected_treatments is not a tuple, add "plit_group" parameter. 
+    # If selected_experiments is not a tuple, add "plit_group" parameter. 
     # Telling plot funtion to only group by the given experiment. 
-    if type(selected_treatments) is not tuple: 
+    if type(selected_experiments) is not tuple: 
         fig = plot_function(granule_data=granule_data_df, 
-                            group_by="treatment", # TODO: Change to 'experiment' to support the new format of aggregate data files
-                            plot_group=selected_treatments, 
+                            group_by="experiment", 
+                            plot_group=selected_experiments, 
                             save_png=False, 
                             **plot_parameters)
     else: # If multiple experiments, omit plot_group parameter. Used for the overlap_hist plot.
-        granule_data_df = granule_data_df[granule_data_df["treatment"].isin(selected_treatments)]
+        granule_data_df = granule_data_df[granule_data_df["experiment"].isin(selected_experiments)]
         fig = plot_function(granule_data=granule_data_df, 
-                            group_by="treatment", # TODO: Change to 'experiment' to support the new format of aggregate data files
+                            group_by="experiment", 
                             save_png=False, 
                             **plot_parameters)
+    print(fig)
     return fig
 
 def create_download_figure(input: Inputs, 

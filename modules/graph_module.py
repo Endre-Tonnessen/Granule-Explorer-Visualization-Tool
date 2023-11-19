@@ -54,7 +54,7 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
                 ui.hr(),
 
                 # Unpack ui elemets from list
-                ui.input_selectize(id="treatment_selectize_input", label="Select treatments", choices=[""], multiple=allow_multiple_experiments, width="200px"),
+                ui.input_selectize(id="experiment_selectize_input", label="Select experiments", choices=[""], multiple=allow_multiple_experiments, width="200px"),
                 *plot_input_select_axis_ui_elements,
                 *plot_input_switch_ui_elements,
                 
@@ -140,7 +140,7 @@ def graph_module_server(input: Inputs,
     
     @output
     @render.plot(alt="Plot")
-    @reactive.event(input.update_plot, input.treatment_selectize_input) 
+    @reactive.event(input.update_plot, input.experiment_selectize_input) 
     def plot():
         """
             Renders a new plot based on the given plot function and its plot-parameters.
@@ -193,14 +193,12 @@ def graph_module_server(input: Inputs,
 
     @reactive.Effect 
     # @reactive.event(granule_data_reactive_value)
-    def update_treatment_selectize_input():
+    def update_experiment_selectize_input():
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
             return 
         granule_data_df: pd.DataFrame = granule_data_reactive_value.get() # Call reactive value to get its contents
-        
-        choices: list[str] = granule_data_df['treatment'].unique().tolist()
-        # print(choices)
-        ui.update_selectize(id="treatment_selectize_input", choices=choices, selected=choices)
+        choices: list[str] = granule_data_df['experiment'].unique().tolist()
+        ui.update_selectize(id="experiment_selectize_input", choices=choices, selected=choices)
 
     @reactive.Effect
     @reactive.event(input.modal_download)
@@ -303,7 +301,9 @@ def graph_module_server(input: Inputs,
                 for artist in fig.get_axes()[0].get_children():
                     if isinstance(artist, plt.Rectangle):  # Check for Rectangle objects
                         # Accessing the heights of the bars
-                        hist_values.append(artist.get_height())
+                        hist_values.append(artist.get_height()) 
+                        print("")
+                        print(artist.properties())
                         # Accessing the edges of the bins
                         bin_edges.append(artist.get_x())
 
@@ -318,8 +318,8 @@ def graph_module_server(input: Inputs,
                 print(len(bin_edges))
 
             # Check the type of plot in the figure
-            for child in fig.get_axes()[0].get_children():
-                print("Child:", child, "Type:", type(child))
+            # for child in fig.get_axes()[0].get_children():
+            #     print("Child:", child, "Type:", type(child))
 
         with io.BytesIO() as buf:
             internal_plot_data_df.to_csv(buf)
@@ -341,7 +341,7 @@ column_aliases = {
                 "mean_radius":"Mean Radius",
                 "pass_rate":"Pass Rate",
                 "mean_intensity":"Intensity"}
-column_filter = ['granule_id','image_path','x','y','bbox_left','bbox_bottom','bbox_right','bbox_top','figure_path', 'treatment']
+column_filter = ['granule_id','image_path','x','y','bbox_left','bbox_bottom','bbox_right','bbox_top','figure_path', 'treatment', "experiment"]
 
 def filter_columns(column_names: list[str]) -> list[str]:
     """
