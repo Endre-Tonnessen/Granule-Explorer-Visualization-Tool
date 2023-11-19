@@ -2,6 +2,7 @@ from shiny import App, Inputs, Outputs, Session, module, render, ui, reactive
 from shiny.types import ImgData, FileInfo
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.colors as co
 import shiny.experimental as x
 import io
 from typing import Callable
@@ -291,31 +292,33 @@ def graph_module_server(input: Inputs,
                                          plot_parameters=parse_plot_parameters(),
                                          save_buffer=buf,
                                          filetype="png")
-            print(type(fig))
 
             if plot_parameters['plot_type'] == "overlap_histogram":
                 # Accessing the bin data from the artists in the figure
                 hist_values = []
                 bin_edges = []
-                
+                bar_colors = []
+
                 for artist in fig.get_axes()[0].get_children():
                     if isinstance(artist, plt.Rectangle):  # Check for Rectangle objects
                         # Accessing the heights of the bars
                         hist_values.append(artist.get_height()) 
-                        print("")
-                        print(artist.properties())
+                        bar_colors.append(co.to_hex(artist.get_facecolor()))
+                        # print("")
+                        # print(artist.properties())
                         # Accessing the edges of the bins
                         bin_edges.append(artist.get_x())
 
                 internal_plot_data_df: pd.DataFrame = pd.DataFrame({
                     "hist_values": hist_values,
-                    "bin_edges": bin_edges
+                    "bin_edges": bin_edges,
+                    "bar_colors": bar_colors
                 })
 
-                print("hist_values")
-                print(len(hist_values))
-                print("bin_edges")
-                print(len(bin_edges))
+                # print("hist_values")
+                # print(len(hist_values))
+                # print("bin_edges")
+                # print(len(bin_edges))
 
             # Check the type of plot in the figure
             # for child in fig.get_axes()[0].get_children():
