@@ -29,6 +29,8 @@ This example displays all possible elements the config can contain. Each 'input'
 For example one text_input entrie will create one ´ui.input_text()´ element in the UI. Each input entrie can have any parameter the corresponding Shiny function can have. Under the hood, each parameter belonging to an entrie is simply passed on to the created UI element.
 ```py
 overlap_hist_plot_input_options = {
+    'plot_type': "histogram", # Type of matplotlib plot this config belongs to. Used to differentiate between plots when downloading internal plot data.
+    'allow_internal_data_download': False, # If to allow the download of the internal data in a plot. Warning! This logic has to be implemented for each new plot.
     'allow_multiple_experiments': True, # If plot should accept multiple different experiments. Useful for comparison plots, overlaping histograms etc.
     'text_input': dict({
         #Creates ui.input_text() element with id='plot_label' and value and label as parameters
