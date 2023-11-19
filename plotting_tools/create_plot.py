@@ -25,6 +25,7 @@ def create_fig(input: Inputs,
         user parameters passed on to the plot function 
 
     Returns:
+    ----------
         A matplotlib figure: matplotlib.figure.Figure
     """
     # If multiple experiments are selected, selectize will return a list of strings. If only 1 experiment, then just one str
@@ -58,7 +59,7 @@ def create_download_figure(input: Inputs,
                            plot_function: Callable, 
                            plot_parameters: dict, 
                            save_buffer: io.BytesIO,
-                           filetype: str):
+                           filetype: str) -> plt.figure:
     """
     Creates plot with ouput settings. Saves to given io buffer zone for download in browser.
 
@@ -84,7 +85,9 @@ def create_download_figure(input: Inputs,
 
     Returns
     -------
-        This function does not return anything.  
+        figure: matplotlib.figure
+        
+        Returns the fig due to the downloading internal plot data feature.
         Its side-effect is saving the created figure in the bytes buffer.
     """
     fig: plt.figure = create_fig(input=input, 
@@ -120,6 +123,7 @@ def create_download_figure(input: Inputs,
     fig.tight_layout(pad=tl_padding)
     fig.set_size_inches(plot_width, plot_height)
     fig.savefig(save_buffer, dpi=dpi, format=filetype, **plotKwargs)
+    return fig
 
 
 def filter_dataset(input: Inputs, granule_data_df: pd.DataFrame) -> pd.DataFrame:
