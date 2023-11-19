@@ -127,7 +127,7 @@ def graph_module_server(input: Inputs,
         plot_parameters_from_user_input = dict()
         # Update user input values from corresponding ui input elements. k_2 is the id for each input in ui.
         for k, _ in plot_parameters.items():
-            if k == 'allow_multiple_experiments': # Logic for graph_module_ui(). Skip, no need to pass on to plot() function.
+            if k in ['allow_multiple_experiments', "plot_type", "allow_internal_plot_data_download"]: # Logic not needed in plot function.
                 continue
             for k_2, v_2 in plot_parameters[k].items():
                 if k == "static_input": # If static value, no need to get it from ui
@@ -205,6 +205,14 @@ def graph_module_server(input: Inputs,
     @reactive.Effect
     @reactive.event(input.modal_download)
     def modal_download():
+        internal_plot_download_button = ui.div() # Placeholder
+        if plot_parameters['allow_internal_plot_data_download']: # If config set to True, display button
+            internal_plot_download_button = x.ui.tooltip(
+                ui.download_button("download_plot_internal_data", "Download figure data (.csv)"),
+                "Data downloaded depends on figure type.",
+                id="download_plot_internal_data_tool_tip",
+            ) 
+
         m = ui.modal(
             ui.row(
                 ui.column(6, 
@@ -221,6 +229,7 @@ def graph_module_server(input: Inputs,
             ),
             ui.download_button("download_plot_png", "Download png"),
             ui.download_button("download_plot_svg", "Download svg"),
+            internal_plot_download_button,
             title="Download config",
             easy_close=True,
             footer=None,
@@ -230,7 +239,7 @@ def graph_module_server(input: Inputs,
     @session.download(filename="plot.png")
     async def download_plot_png():  
         """
-            File download implemented by yielding bytes, in this case either all at
+            File download implemented by yielding bytes, in this case all at
             once (the entire plot). Filename is determined in the @session.Download decorator ontop of function.
             This determines what the browser will name the downloaded file.     
         """
@@ -255,7 +264,7 @@ def graph_module_server(input: Inputs,
         
         with io.BytesIO() as buf:
             granule_data_df: pd.DataFrame = granule_data_reactive_value.get()
-            fig = create_download_figure(input=input, 
+            fig:plt.figure = create_download_figure(input=input, 
                                          granule_data_df=granule_data_df, 
                                          plot_function=plot_function, 
                                          plot_parameters=parse_plot_parameters(),
@@ -264,6 +273,58 @@ def graph_module_server(input: Inputs,
             yield buf.getvalue()
             plt.close(fig=fig)
 
+
+    @session.download(filename="plot_internal_data.csv")
+    async def download_plot_internal_data():  
+        """
+            Downloads the internal data of {plot_function} as .csv
+        """
+        if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
+                return
+        
+        if not plot_parameters['allow_internal_plot_data_download']:
+            raise Exception("'allow_internal_plot_data_download' config is set to False. Cannot download interal plot data.")
+
+        with io.BytesIO() as buf:
+            granule_data_df: pd.DataFrame = granule_data_reactive_value.get()
+            fig = create_download_figure(input=input, 
+                                         granule_data_df=granule_data_df, 
+                                         plot_function=plot_function, 
+                                         plot_parameters=parse_plot_parameters(),
+                                         save_buffer=buf,
+                                         filetype="png")
+            print(type(fig))
+
+            if plot_parameters['plot_type'] == "overlap_histogram":
+                # Accessing the bin data from the artists in the figure
+                hist_values = []
+                bin_edges = []
+                
+                for artist in fig.get_axes()[0].get_children():
+                    if isinstance(artist, plt.Rectangle):  # Check for Rectangle objects
+                        # Accessing the heights of the bars
+                        hist_values.append(artist.get_height())
+                        # Accessing the edges of the bins
+                        bin_edges.append(artist.get_x())
+
+                internal_plot_data_df: pd.DataFrame = pd.DataFrame({
+                    "hist_values": hist_values,
+                    "bin_edges": bin_edges
+                })
+
+                print("hist_values")
+                print(len(hist_values))
+                print("bin_edges")
+                print(len(bin_edges))
+
+            # Check the type of plot in the figure
+            for child in fig.get_axes()[0].get_children():
+                print("Child:", child, "Type:", type(child))
+
+        with io.BytesIO() as buf:
+            internal_plot_data_df.to_csv(buf)
+            yield buf.getvalue()
+            plt.close(fig=fig)
 
 
 
@@ -276,7 +337,7 @@ column_aliases = {
                 "sigma_err": "Surface Tension Error (N/m)",
                 "kappa_scale_err": "Bending Rigidity Error",
                 "fitting_error": "Fitting Error",
-                "q_2_mag": "$|C_2|^2$",
+                "q_2_mag": "Ellipsarity",
                 "mean_radius":"Mean Radius",
                 "pass_rate":"Pass Rate",
                 "mean_intensity":"Intensity"}
