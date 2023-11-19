@@ -2,6 +2,7 @@ import pandas as pd
 from pathlib import Path
 
 from shiny import App, Inputs, Outputs, Session, render, ui, module, reactive
+import shiny.experimental as x
 from shiny.types import FileInfo
 # from ..plotting_tools.split_histogram import read_data
 
@@ -10,8 +11,18 @@ from shiny.types import FileInfo
 """
 @module.ui
 def file_upload_module_ui():
-    return (ui.input_file("graunle_aggregate_data", "Upload granule data", accept=[".h5"], multiple=True),
-            ui.input_file("graunle_image_data", "Upload image data", accept=[".ims"], multiple=False))
+    return (
+        x.ui.tooltip(
+            ui.input_file("graunle_aggregate_data", "Upload granule data", accept=[".h5"], multiple=True),
+            "Upload aggregate_data.h5 files to begin!",
+            id="graunle_aggregate_data_upload_tool_tip",
+            options={
+                "show":True
+            },
+            show=True
+        ),
+        ui.input_file("graunle_image_data", "Upload image data", accept=[".ims"], multiple=False)
+    )
         
 @module.server
 def file_upload_module_server(input: Inputs, output: Outputs, session: Session) -> reactive.Value[pd.DataFrame]:
@@ -29,6 +40,7 @@ def file_upload_module_server(input: Inputs, output: Outputs, session: Session) 
         file_paths: list[Path] = [Path(f[i]["datapath"]) for i in range(len(f))]
         df = read_data(file_paths)
         uploaded_file.set(df)
+
     
     return uploaded_file
 
