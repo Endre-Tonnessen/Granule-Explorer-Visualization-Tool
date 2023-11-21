@@ -97,7 +97,7 @@ def main(input_file: Path, out_dir: Path = "/tmp/", comp_file: Path = None, bins
 
 def hist_plots(granule_data: pd.DataFrame, out_dir: Path, density=False):
 
-    sigma_bins = np.logspace(-9.5, -4, 60)
+    sigma_bins = np.logspace(-9.5, -4, 60) # 
     sh.overlap_hist(
         "sigma",
         "treatment",

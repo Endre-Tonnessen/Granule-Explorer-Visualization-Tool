@@ -24,7 +24,7 @@ import plotting_tools.split_histograms as splth
 
 twoDHist_plot_input_options={
     'plot_type': "histogram",
-    'allow_internal_plot_data_download': False,
+    'allow_internal_plot_data_download': True,
     'allow_multiple_experiments':False,
     'text_input': dict({
         "plot_title":dict({
@@ -70,7 +70,7 @@ twoDHist_plot_input_options={
     
 scatter_plot_input_options={
     'plot_type': "scatter",
-    'allow_internal_plot_data_download': False,
+    'allow_internal_plot_data_download': True,
     'allow_multiple_experiments':False,
     'text_input': dict({
         "plot_title":dict({
@@ -114,7 +114,7 @@ scatter_plot_input_options={
 
 filter_plot_input_options={
     'plot_type': "filter",
-    'allow_internal_plot_data_download': False,
+    'allow_internal_plot_data_download': True,
     'allow_multiple_experiments':False,
     'text_input': dict({
         "plot_title":dict({

@@ -151,10 +151,11 @@ def graph_module_server(input: Inputs,
             return
       
         granule_data_df: pd.DataFrame = granule_data_reactive_value.get() # Call reactive value to get its contents
-        return create_fig(input=input, 
+        fig, _ = create_fig(input=input, 
                           granule_data_df=granule_data_df, 
                           plot_function=plot_function,
                           plot_parameters=parse_plot_parameters())
+        return fig
         
     @reactive.Effect
     def update_axies_select(): 
@@ -286,46 +287,13 @@ def graph_module_server(input: Inputs,
 
         with io.BytesIO() as buf:
             granule_data_df: pd.DataFrame = granule_data_reactive_value.get()
-            fig = create_download_figure(input=input, 
-                                         granule_data_df=granule_data_df, 
-                                         plot_function=plot_function, 
-                                         plot_parameters=parse_plot_parameters(),
-                                         save_buffer=buf,
-                                         filetype="png")
-
-            if plot_parameters['plot_type'] == "overlap_histogram":
-                # Accessing the bin data from the artists in the figure
-                hist_values = []
-                bin_edges = []
-                bar_colors = []
-
-                for artist in fig.get_axes()[0].get_children():
-                    if isinstance(artist, plt.Rectangle):  # Check for Rectangle objects
-                        # Accessing the heights of the bars
-                        hist_values.append(artist.get_height()) 
-                        bar_colors.append(co.to_hex(artist.get_facecolor()))
-                        # print("")
-                        # print(artist.properties())
-                        # Accessing the edges of the bins
-                        bin_edges.append(artist.get_x())
-
-                internal_plot_data_df: pd.DataFrame = pd.DataFrame({
-                    "hist_values": hist_values,
-                    "bin_edges": bin_edges,
-                    "bar_colors": bar_colors
-                })
-
-                # print("hist_values")
-                # print(len(hist_values))
-                # print("bin_edges")
-                # print(len(bin_edges))
-
-            # Check the type of plot in the figure
-            # for child in fig.get_axes()[0].get_children():
-            #     print("Child:", child, "Type:", type(child))
+            fig, plot_data_df = create_fig(input=input, 
+                                            granule_data_df=granule_data_df, 
+                                            plot_function=plot_function, 
+                                            plot_parameters=parse_plot_parameters())
 
         with io.BytesIO() as buf:
-            internal_plot_data_df.to_csv(buf)
+            plot_data_df.to_csv(buf)
             yield buf.getvalue()
             plt.close(fig=fig)
 

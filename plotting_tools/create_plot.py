@@ -2,12 +2,12 @@ import pandas as pd
 from shiny import App, Inputs, Outputs, Session, module, render, ui, reactive
 import io
 import matplotlib.pyplot as plt
-from typing import Callable, Union
+from typing import Callable, Tuple, Union
 
 def create_fig(input: Inputs, 
                granule_data_df: pd.DataFrame, 
                plot_function: Callable, 
-               plot_parameters: dict) -> plt.figure:
+               plot_parameters: dict) -> Tuple[plt.figure, pd.DataFrame]:
     """Based on given data, graph function and graph parameters, returns resulting figure from the filtered dataset.
 
     Parameters
@@ -26,7 +26,7 @@ def create_fig(input: Inputs,
 
     Returns:
     ----------
-        A matplotlib figure: matplotlib.figure.Figure
+        Returns 2-d tuple of (fig: matplotlib.figure, plot_data: pd.Dataframe)
     """
     # If multiple experiments are selected, selectize will return a list of strings. If only 1 experiment, then just one str
     # Corresponds to selectizes parameter "multiple" being True or False.
@@ -38,19 +38,19 @@ def create_fig(input: Inputs,
     # If selected_experiments is not a tuple, add "plit_group" parameter. 
     # Telling plot funtion to only group by the given experiment. 
     if type(selected_experiments) is not tuple: 
-        fig = plot_function(granule_data=granule_data_df, 
+        fig, plot_data_df = plot_function(granule_data=granule_data_df, 
                             group_by="experiment", 
                             plot_group=selected_experiments, 
                             save_png=False, 
                             **plot_parameters)
     else: # If multiple experiments, omit plot_group parameter. Used for the overlap_hist plot.
         granule_data_df = granule_data_df[granule_data_df["experiment"].isin(selected_experiments)]
-        fig = plot_function(granule_data=granule_data_df, 
+        fig, plot_data_df = plot_function(granule_data=granule_data_df, 
                             group_by="experiment", 
                             save_png=False, 
                             **plot_parameters)
-    print(fig)
-    return fig
+    
+    return fig, plot_data_df
 
 def create_download_figure(input: Inputs, 
                            granule_data_df: pd.DataFrame, 
@@ -88,10 +88,12 @@ def create_download_figure(input: Inputs,
         Returns the fig due to the downloading internal plot data feature.
         Its side-effect is saving the created figure in the bytes buffer.
     """
-    fig: plt.figure = create_fig(input=input, 
+    fig_and_data: Tuple[plt.figure, pd.DateOffset] = create_fig(input=input, 
                      granule_data_df=granule_data_df, 
                      plot_function=plot_function, 
                      plot_parameters=plot_parameters)
+    fig: plt.figure = fig_and_data[0] # Grab just the figure
+    
     # Get user input from UI
     padding = input['download_figure_padding']()
     tl_padding = input['download_figure_tl_padding']()
