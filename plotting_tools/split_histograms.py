@@ -604,6 +604,7 @@ def filter_plot(
             )
         else:
             ax.plot("bin_mid_point", agg.__name__, **plt_kwargs)
+            # Plotting 'bin_mid_point' against 'agg.__name__'
 
         agg_mean = agg(np.abs(group[plot_column]))
         ax.axhline(agg_mean,0,1,color=colour,ls="--",lw=0.8,alpha=1.0)
@@ -616,12 +617,7 @@ def filter_plot(
         ax.set_xscale("log")
     if y_log_scale:
         ax.set_yscale("log")
-
-    # if save_png:
-    #     pt.save(
-    #         Path(out_dir) / f"filters-{bin_column}-{plot_column}-{bin_type}.png",
-    #         padding=0.05,
-    #     )
+        
     return fig, pd.DataFrame()
 
 def scatter_plot(
