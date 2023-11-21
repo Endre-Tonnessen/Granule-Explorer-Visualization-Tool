@@ -8,6 +8,7 @@
     quartile plots and error estimates.
 """
 
+from typing import Tuple
 import matplotlib.pyplot as plt
 import matplotlib.colors as c
 from matplotlib.cm import ScalarMappable
@@ -488,7 +489,7 @@ def filter_plot(
     errors=False,
     save_png=True,
     out_dir="/tmp/",
-):
+) -> Tuple[plt.figure, pd.DataFrame]:
     """
     Used to see how changing the filters effects the distrubution of certain parameters.
 
@@ -636,7 +637,7 @@ def scatter_plot(
     log_scaleY = True,
     save_png = True,
     out_dir = "/tmp/",
-):
+) -> Tuple[plt.figure, pd.DataFrame]:
     """
     A 2D scatter plot to visuale correlations between parameters. If it looks to busy,
     use histogram2D
@@ -735,7 +736,7 @@ def histogram2D (
     log_scaleY = True,
     save_png = True,
     out_dir = "/tmp/", 
-):
+) -> Tuple[plt.figure, pd.DataFrame]:
     """
     A 2D histogram plot to visuale correlations between parameters. If it looks too
     sparse, (not enough points per bin) use scatter_plot instead.
@@ -798,7 +799,7 @@ def histogram2D (
 
     Returns
     -------
-    A matplotlib figure
+    A matplotlib figure and dataframe
     """
 
     fig, ax = create_axes(1, fig_width=8.3 / 2.5, aspect=1)
@@ -836,13 +837,16 @@ def histogram2D (
     if log_scaleX:
         ax.set_xscale("log")
 
-    # if save_png:
-    #     pt.save(
-    #         Path(out_dir) / f"2D-hist-{plot_group}-{plot_row}-{plot_column}.png",
-    #         padding=0.05,
-    #     )
-
-    return fig, pd.DataFrame()
+    plot_data = group[['experiment', plot_row, plot_column]].reset_index() # Grab x and y-axis  
+    # Add x-axis bin limits
+    bins = pd.DataFrame({
+            'binsX': binsX,
+            'binsY': binsY,
+        })
+    
+    plot_data = pd.concat([plot_data, bins], axis=1) # Add x and y-axis bins
+    plot_data = plot_data.drop(columns=['index'])    # Remove unused index column    
+    return fig, plot_data
 
 
 def pair_plot(granule_data: pd.DataFrame, save_png = True, out_dir: Path = "/tmp/"):
@@ -941,7 +945,7 @@ def overlap_hist(
     benchling_format: bool = False,
     save_png = True,
     out_dir = "/tmp/", 
-):
+) -> Tuple[plt.figure, pd.DataFrame]:
     """
     Draw overlapping histograms of [plot_column], split by [group_by].
 
