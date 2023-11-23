@@ -28,7 +28,7 @@ twoDHist_plot_input_options={
     'allow_multiple_experiments':False,
     'text_input': dict({
         "plot_title":dict({
-            'value':"Surface Tension Error (N/m)", 
+            'value':"Interfacial Tension Error (N/m)", 
             'label':"Y-axis title"
         }),
         "row_title":dict({
@@ -60,7 +60,7 @@ twoDHist_plot_input_options={
     'select_input_dataset_columns':dict({
         # Select inputs that are automatically populated with the columns of the dataset
         # Parameters are ui.input_select() parameters
-        "plot_column":dict({'label':'Y-axis', 'choices':['Surface Tension Error (N/m)'], 'selected':"Surface Tension Error (N/m)"}),
+        "plot_column":dict({'label':'Y-axis', 'choices':['Interfacial Tension Error (N/m)'], 'selected':"Interfacial Tension Error (N/m)"}),
         "plot_row":dict({'label':'X-axis', 'choices':['Interfacial Tension (N/m)'], 'selected':"Interfacial Tension (N/m)"})
     }),
     'static_input':dict({
@@ -74,7 +74,7 @@ scatter_plot_input_options={
     'allow_multiple_experiments':False,
     'text_input': dict({
         "plot_title":dict({
-            'value':"Surface Tension Error (N/m)", 
+            'value':"Interfacial Tension Error (N/m)", 
             'label':"Y-axis title"
         }),
         "row_title":dict({
@@ -104,7 +104,7 @@ scatter_plot_input_options={
     'select_input_dataset_columns':dict({
         # Select inputs that are automatically populated with the columns of the dataset
         # Parameters are ui.input_select() parameters
-        "plot_column":dict({'label':'Y-axis', 'choices':['Surface Tension Error (N/m)'], 'selected':"Surface Tension Error (N/m)"}),
+        "plot_column":dict({'label':'Y-axis', 'choices':['Interfacial Tension Error (N/m)'], 'selected':"Interfacial Tension Error (N/m)"}),
         "plot_row":dict({'label':'X-axis', 'choices':['Interfacial Tension (N/m)'], 'selected':"Interfacial Tension (N/m)"})
     }),
     'static_input':dict({
@@ -118,7 +118,7 @@ filter_plot_input_options={
     'allow_multiple_experiments':False,
     'text_input': dict({
         "plot_title":dict({
-            'value':"Surface Tension Error (N/m)", 
+            'value':"Interfacial Tension Error (N/m)", 
             'label':"Y-axis title"
         }),
         "bin_title":dict({
@@ -158,7 +158,7 @@ filter_plot_input_options={
     'select_input_dataset_columns':dict({
         # Select inputs that are automatically populated with the columns of the dataset
         # Parameters are ui.input_select() parameters
-        "plot_column":dict({'label':'Y-axis', 'choices':['Surface Tension Error (N/m)'], 'selected':"Surface Tension Error (N/m)"}),
+        "plot_column":dict({'label':'Y-axis', 'choices':['Interfacial Tension Error (N/m)'], 'selected':"Interfacial Tension Error (N/m)"}),
         "bin_column":dict({'label':'X-axis', 'choices':['Interfacial Tension (N/m)'], 'selected':"Interfacial Tension (N/m)"})
     }),
     'static_input':dict({
@@ -208,7 +208,7 @@ overlap_hist_plot_input_options={
     'select_input_dataset_columns':dict({
         # Select inputs that are automatically populated with the columns of the dataset
         # Parameters are ui.input_select() parameters
-        "plot_column":dict({'label':'X-axis', 'choices':['Surface Tension Error (N/m)'], 'selected':"Surface Tension Error (N/m)"}),
+        "plot_column":dict({'label':'X-axis', 'choices':['Interfacial Tension Error (N/m)'], 'selected':"Interfacial Tension Error (N/m)"}),
         # "plot_row":dict({'label':'X-axis', 'choices':['Interfacial Tension (N/m)'], 'selected':"Interfacial Tension (N/m)"})
     }),
     'static_input':dict({

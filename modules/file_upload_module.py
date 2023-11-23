@@ -23,6 +23,7 @@ def file_upload_module_ui():
         ),
         ui.input_file("graunle_image_data", "Upload image data", accept=[".ims"], multiple=False)
     )
+
         
 @module.server
 def file_upload_module_server(input: Inputs, output: Outputs, session: Session) -> reactive.Value[pd.DataFrame]:
