@@ -15,3 +15,8 @@ lib
 lib64
 data
 treatment_types
+# Ignore pyinstaller .exe build folders
+dist
+dist/*
+build
+build/*
