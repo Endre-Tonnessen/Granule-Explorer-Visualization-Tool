@@ -1020,7 +1020,12 @@ def overlap_hist(
     if type(n_bins) == int and log_scale == True:
         bin_max = granule_data[plot_column].max()
         bin_min = granule_data[plot_column].min()
-        n_bins = np.geomspace(bin_min, bin_max, n_bins + 1)        
+        n_bins = np.geomspace(bin_min, bin_max, n_bins + 1)
+    elif type(n_bins) == int and log_scale == False:
+        print("wolo")
+        bin_max = granule_data[plot_column].max()
+        bin_min = granule_data[plot_column].min()
+        n_bins = np.linspace(bin_min, bin_max, n_bins + 1)
 
     plot_data = dict({
         'experiment':[],
