@@ -3,15 +3,15 @@ from shiny import App, render, ui, reactive
 from shiny.types import ImgData, FileInfo
 import shiny.experimental as x
 import webbrowser
-from pathlib import Path
+# from pathlib import Path
 from numpy import random 
 import pandas as pd
 import matplotlib.pyplot as plt
 import shinyswatch
 import sys
 import pathlib
-plt = platform.system()
-if plt == 'Windows': pathlib.PosixPath = pathlib.WindowsPath
+plt2 = platform.system()
+if plt2 == 'Windows': pathlib.PosixPath = pathlib.WindowsPath
 # temp = pathlib.PosixPath
 # pathlib.PosixPath = pathlib.WindowsPath
 
@@ -23,6 +23,8 @@ from modules.file_upload_module import file_upload_module_ui, file_upload_module
 import plotting_tools.split_histograms as splth
 
 twoDHist_plot_input_options={
+    'plot_type': "histogram",
+    'allow_internal_plot_data_download': True,
     'allow_multiple_experiments':False,
     'text_input': dict({
         "plot_title":dict({
@@ -67,6 +69,8 @@ twoDHist_plot_input_options={
 }
     
 scatter_plot_input_options={
+    'plot_type': "scatter",
+    'allow_internal_plot_data_download': True,
     'allow_multiple_experiments':False,
     'text_input': dict({
         "plot_title":dict({
@@ -109,6 +113,8 @@ scatter_plot_input_options={
 }
 
 filter_plot_input_options={
+    'plot_type': "filter",
+    'allow_internal_plot_data_download': True,
     'allow_multiple_experiments':False,
     'text_input': dict({
         "plot_title":dict({
@@ -161,6 +167,8 @@ filter_plot_input_options={
 }
 
 overlap_hist_plot_input_options={
+    'plot_type': "overlap_histogram",
+    'allow_internal_plot_data_download': True,
     'allow_multiple_experiments':True, # Allow user to select mutiple experiment
     'text_input': dict({
         # "plot_title":dict({

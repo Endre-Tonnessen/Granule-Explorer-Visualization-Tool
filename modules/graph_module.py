@@ -2,6 +2,7 @@ from shiny import App, Inputs, Outputs, Session, module, render, ui, reactive
 from shiny.types import ImgData, FileInfo
 import pandas as pd
 import matplotlib.pyplot as plt
+import matplotlib.colors as co
 import shiny.experimental as x
 import io
 from typing import Callable
@@ -54,7 +55,7 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
                 ui.hr(),
 
                 # Unpack ui elemets from list
-                ui.input_selectize(id="treatment_selectize_input", label="Select treatments", choices=[""], multiple=allow_multiple_experiments, width="200px"),
+                ui.input_selectize(id="experiment_selectize_input", label="Select experiments", choices=[""], multiple=allow_multiple_experiments, width="200px"),
                 *plot_input_select_axis_ui_elements,
                 *plot_input_switch_ui_elements,
                 
@@ -127,7 +128,7 @@ def graph_module_server(input: Inputs,
         plot_parameters_from_user_input = dict()
         # Update user input values from corresponding ui input elements. k_2 is the id for each input in ui.
         for k, _ in plot_parameters.items():
-            if k == 'allow_multiple_experiments': # Logic for graph_module_ui(). Skip, no need to pass on to plot() function.
+            if k in ['allow_multiple_experiments', "plot_type", "allow_internal_plot_data_download"]: # Logic not needed in plot function.
                 continue
             for k_2, v_2 in plot_parameters[k].items():
                 if k == "static_input": # If static value, no need to get it from ui
@@ -140,7 +141,7 @@ def graph_module_server(input: Inputs,
     
     @output
     @render.plot(alt="Plot")
-    @reactive.event(input.update_plot, input.treatment_selectize_input) 
+    @reactive.event(input.update_plot, input.experiment_selectize_input) 
     def plot():
         """
             Renders a new plot based on the given plot function and its plot-parameters.
@@ -150,10 +151,11 @@ def graph_module_server(input: Inputs,
             return
       
         granule_data_df: pd.DataFrame = granule_data_reactive_value.get() # Call reactive value to get its contents
-        return create_fig(input=input, 
+        fig, _ = create_fig(input=input, 
                           granule_data_df=granule_data_df, 
                           plot_function=plot_function,
                           plot_parameters=parse_plot_parameters())
+        return fig
         
     @reactive.Effect
     def update_axies_select(): 
@@ -193,18 +195,24 @@ def graph_module_server(input: Inputs,
 
     @reactive.Effect 
     # @reactive.event(granule_data_reactive_value)
-    def update_treatment_selectize_input():
+    def update_experiment_selectize_input():
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
             return 
         granule_data_df: pd.DataFrame = granule_data_reactive_value.get() # Call reactive value to get its contents
-        
-        choices: list[str] = granule_data_df['treatment'].unique().tolist()
-        # print(choices)
-        ui.update_selectize(id="treatment_selectize_input", choices=choices, selected=choices)
+        choices: list[str] = granule_data_df['experiment'].unique().tolist()
+        ui.update_selectize(id="experiment_selectize_input", choices=choices, selected=choices)
 
     @reactive.Effect
     @reactive.event(input.modal_download)
     def modal_download():
+        internal_plot_download_button = ui.div() # Placeholder
+        if plot_parameters['allow_internal_plot_data_download']: # If config set to True, display button
+            internal_plot_download_button = x.ui.tooltip(
+                ui.download_button("download_plot_internal_data", "Download figure data (.csv)"),
+                "Data downloaded depends on figure type.",
+                id="download_plot_internal_data_tool_tip",
+            ) 
+
         m = ui.modal(
             ui.row(
                 ui.column(6, 
@@ -221,6 +229,7 @@ def graph_module_server(input: Inputs,
             ),
             ui.download_button("download_plot_png", "Download png"),
             ui.download_button("download_plot_svg", "Download svg"),
+            internal_plot_download_button,
             title="Download config",
             easy_close=True,
             footer=None,
@@ -230,7 +239,7 @@ def graph_module_server(input: Inputs,
     @session.download(filename="plot.png")
     async def download_plot_png():  
         """
-            File download implemented by yielding bytes, in this case either all at
+            File download implemented by yielding bytes, in this case all at
             once (the entire plot). Filename is determined in the @session.Download decorator ontop of function.
             This determines what the browser will name the downloaded file.     
         """
@@ -255,7 +264,7 @@ def graph_module_server(input: Inputs,
         
         with io.BytesIO() as buf:
             granule_data_df: pd.DataFrame = granule_data_reactive_value.get()
-            fig = create_download_figure(input=input, 
+            fig:plt.figure = create_download_figure(input=input, 
                                          granule_data_df=granule_data_df, 
                                          plot_function=plot_function, 
                                          plot_parameters=parse_plot_parameters(),
@@ -264,6 +273,29 @@ def graph_module_server(input: Inputs,
             yield buf.getvalue()
             plt.close(fig=fig)
 
+
+    @session.download(filename="plot_internal_data.csv")
+    async def download_plot_internal_data():  
+        """
+            Downloads the internal data of {plot_function} as .csv
+        """
+        if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
+                return
+        
+        if not plot_parameters['allow_internal_plot_data_download']:
+            raise Exception("'allow_internal_plot_data_download' config is set to False. Cannot download interal plot data.")
+
+        with io.BytesIO() as buf:
+            granule_data_df: pd.DataFrame = granule_data_reactive_value.get()
+            fig, plot_data_df = create_fig(input=input, 
+                                            granule_data_df=granule_data_df, 
+                                            plot_function=plot_function, 
+                                            plot_parameters=parse_plot_parameters())
+
+        with io.BytesIO() as buf:
+            plot_data_df.to_csv(buf)
+            yield buf.getvalue()
+            plt.close(fig=fig)
 
 
 
@@ -280,7 +312,7 @@ column_aliases = {
                 "mean_radius":"Mean Radius",
                 "pass_rate":"Pass Rate",
                 "mean_intensity":"Intensity"}
-column_filter = ['granule_id','image_path','x','y','bbox_left','bbox_bottom','bbox_right','bbox_top','figure_path', 'treatment']
+column_filter = ['granule_id','image_path','x','y','bbox_left','bbox_bottom','bbox_right','bbox_top','figure_path', 'treatment', "experiment"]
 
 def filter_columns(column_names: list[str]) -> list[str]:
     """

@@ -8,6 +8,7 @@
     quartile plots and error estimates.
 """
 
+from typing import Tuple
 import matplotlib.pyplot as plt
 import matplotlib.colors as c
 from matplotlib.cm import ScalarMappable
@@ -21,6 +22,7 @@ from collections import OrderedDict
 from scipy.stats import sem, gmean, gstd,norm
 from scipy.stats import gmean as _gmean
 from matplotlib import rc
+from collections import defaultdict
 
 from matplotlib.ticker import EngFormatter
 # import granule_explorer_core.tools.plot_tools as pt   
@@ -487,7 +489,7 @@ def filter_plot(
     errors=False,
     save_png=True,
     out_dir="/tmp/",
-):
+) -> Tuple[plt.figure, pd.DataFrame]:
     """
     Used to see how changing the filters effects the distrubution of certain parameters.
 
@@ -602,6 +604,7 @@ def filter_plot(
             )
         else:
             ax.plot("bin_mid_point", agg.__name__, **plt_kwargs)
+            # Plotting 'bin_mid_point' against 'agg.__name__'
 
         agg_mean = agg(np.abs(group[plot_column]))
         ax.axhline(agg_mean,0,1,color=colour,ls="--",lw=0.8,alpha=1.0)
@@ -614,13 +617,8 @@ def filter_plot(
         ax.set_xscale("log")
     if y_log_scale:
         ax.set_yscale("log")
-
-    # if save_png:
-    #     pt.save(
-    #         Path(out_dir) / f"filters-{bin_column}-{plot_column}-{bin_type}.png",
-    #         padding=0.05,
-    #     )
-    return fig
+        
+    return fig, pd.DataFrame()
 
 def scatter_plot(
     plot_column,
@@ -635,7 +633,7 @@ def scatter_plot(
     log_scaleY = True,
     save_png = True,
     out_dir = "/tmp/",
-):
+) -> Tuple[plt.figure, pd.DataFrame]:
     """
     A 2D scatter plot to visuale correlations between parameters. If it looks to busy,
     use histogram2D
@@ -693,7 +691,7 @@ def scatter_plot(
 
     Returns
     -------
-    A matplotlib figure
+    A matplotlib figure and a dataframe with the plot data
     """
 
     fig, ax = create_axes(1, fig_width=8.3 / 2.5, aspect=1)
@@ -716,12 +714,7 @@ def scatter_plot(
     if log_scaleX:
         ax.set_xscale("log")
 
-    # if save_png:
-    #     pt.save(
-    #         Path(out_dir) / f"scatter-{plot_group}-{plot_row}-{plot_column}.png",
-    #         padding=0.05,
-    #     )
-    return fig
+    return fig, sorted_granules[[plot_row, plot_column, 'experiment']]
 
 
 def histogram2D (
@@ -739,7 +732,7 @@ def histogram2D (
     log_scaleY = True,
     save_png = True,
     out_dir = "/tmp/", 
-):
+) -> Tuple[plt.figure, pd.DataFrame]:
     """
     A 2D histogram plot to visuale correlations between parameters. If it looks too
     sparse, (not enough points per bin) use scatter_plot instead.
@@ -802,7 +795,7 @@ def histogram2D (
 
     Returns
     -------
-    A matplotlib figure
+    A matplotlib figure and dataframe
     """
 
     fig, ax = create_axes(1, fig_width=8.3 / 2.5, aspect=1)
@@ -840,13 +833,16 @@ def histogram2D (
     if log_scaleX:
         ax.set_xscale("log")
 
-    # if save_png:
-    #     pt.save(
-    #         Path(out_dir) / f"2D-hist-{plot_group}-{plot_row}-{plot_column}.png",
-    #         padding=0.05,
-    #     )
-
-    return fig
+    plot_data = group[['experiment', plot_row, plot_column]].reset_index() # Grab x and y-axis  
+    # Add x-axis bin limits
+    bins = pd.DataFrame({
+            'binsX': binsX,
+            'binsY': binsY,
+        })
+    
+    plot_data = pd.concat([plot_data, bins], axis=1) # Add x and y-axis bins
+    plot_data = plot_data.drop(columns=['index'])    # Remove unused index column    
+    return fig, plot_data
 
 
 def pair_plot(granule_data: pd.DataFrame, save_png = True, out_dir: Path = "/tmp/"):
@@ -945,7 +941,7 @@ def overlap_hist(
     benchling_format: bool = False,
     save_png = True,
     out_dir = "/tmp/", 
-):
+) -> Tuple[plt.figure, pd.DataFrame]:
     """
     Draw overlapping histograms of [plot_column], split by [group_by].
 
@@ -1026,19 +1022,34 @@ def overlap_hist(
         bin_min = granule_data[plot_column].min()
         n_bins = np.geomspace(bin_min, bin_max, n_bins + 1)        
 
+    plot_data = dict({
+        'experiment':[],
+        'hist_values':[],
+        'bin_edges':[],
+        # 'hist_error':[],
+        'hist_values_normalized':[]
+    })
+
     for num, (label, chunk) in enumerate(chunks):
         colour = get_colour(label)
         hist_vals, bin_edges = np.histogram(
             chunk[plot_column], bins=n_bins, density=density
         )
 
+        plot_data['experiment'] += [label for _ in range(len(hist_vals))]
+        plot_data['hist_values'] += hist_vals.tolist()
+        plot_data['bin_edges'] += bin_edges[:-1].tolist() # Exclude last value, defaults to 1 (last bin edge)
+        
         widths = bin_edges[1:] - bin_edges[:-1]
         if plot_errors is None:
             hist_err = None
         else:
             hist_err = _get_hist_err(chunk[plot_column], chunk[plot_errors], bin_edges)
+            # plot_data['hist_err'] += hist_err.tolist()
 
         hist_vals, hist_err = _get_normalised(hist_vals, hist_err)
+        plot_data['hist_values_normalized'] += hist_vals.tolist()
+        
 
         low_index, low_limit, high_index, high_limit = _calculate_limits(hist_vals,chunk,plot_column)
 
@@ -1132,7 +1143,8 @@ def overlap_hist(
         sns.despine()
         plt.tight_layout()
         plt.savefig(save_path, dpi=330)
-    return fig
+    
+    return fig, pd.DataFrame(plot_data)
 
 
 def read_data(input_file,comp_file = None,data_file_name="aggregate_fittings.h5"):
