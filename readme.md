@@ -77,3 +77,7 @@ overlap_hist_plot_input_options = {
     }),
 }
 ```
+
+# Compiling into .exe
+
+`pyinstaller --add-data="modules/*;modules" --add-data="plotting_tools/*;plotting_tools" --onefile app.py --windowed --hidden-import seaborn --hidden-import scipy`

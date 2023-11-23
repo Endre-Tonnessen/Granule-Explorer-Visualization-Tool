@@ -270,4 +270,5 @@ def server(input, output, session):
     
         
 app = App(ui=app_ui, server=server)
-# webbrowser.open("http://127.0.0.1:8000", new=2)
+# app.run()
+webbrowser.open("http://127.0.0.1:8000", new=2)
