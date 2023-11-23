@@ -14,3 +14,8 @@ src/*.egg-info
 lib
 lib64
 data
+# Ignore pyinstaller .exe build folders
+dist
+dist/*
+build
+build/*
