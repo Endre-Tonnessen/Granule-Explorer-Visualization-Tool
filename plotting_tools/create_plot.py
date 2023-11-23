@@ -8,7 +8,7 @@ def create_fig(input: Inputs,
                granule_data_df: pd.DataFrame, 
                plot_function: Callable, 
                plot_parameters: dict) -> Tuple[plt.figure, pd.DataFrame]:
-    """Based on given data, graph function and graph parameters, returns resulting figure from the filtered dataset.
+    """Based on given data, graph function and graph parameters, returns resulting figure from the filtered dataset along with the plot_data.
 
     Parameters
     ----------
@@ -60,6 +60,7 @@ def create_download_figure(input: Inputs,
                            filetype: str) -> plt.figure:
     """
     Creates plot with ouput settings. Saves to given io buffer zone for download in browser.
+    Returns the figure.
 
     Parameters
     ----------
@@ -160,7 +161,8 @@ def filter_dataset(input: Inputs, granule_data_df: pd.DataFrame) -> pd.DataFrame
 
     # If any filters, run query
     if len(query) > 0:
-        query = ''.join(list(map(lambda filter: filter + " and ", query[:-1]))) + query[-1] # Add "and" between queries
+        # Add 'and' between all queries except the last one.
+        query = ''.join(list(map(lambda filter: filter + " and ", query[:-1]))) + query[-1]
         filtered_granule_data: pd.DataFrame = granule_data_df.query(
             query,
             inplace=False
