@@ -182,19 +182,31 @@ overlap_hist_plot_input_options={
     }),
     'numeric_input': dict({
         "n_bins":dict({
-            'value':20, 
+            'value':60, 
             'label':"Nr bins"
+        }),
+        "bin_start":dict({
+            'value':-9.5, 
+            'label':"Bin start value"
+        }),
+        "bin_end":dict({
+            'value':-4, 
+            'label':"Bin end value"
         })
     }),
     'bool_input':dict({
         #Sliders and such
         'legend':dict({
-            'value':False, 
+            'value':True, 
             'label':'legend'
         }),
         'log_scale':dict({
             'value':True, 
             'label':'log_scale'
+        }),
+        'custom_bin_start_stop':dict({
+            'value':False, 
+            'label':'Custom Bin interval'
         }),
         'density':dict({
             'value':False, 

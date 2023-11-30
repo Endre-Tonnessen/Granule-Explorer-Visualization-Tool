@@ -938,6 +938,9 @@ def overlap_hist(
     density=False,
     legend=False,
     log_scale = True,
+    custom_bin_start_stop = False,
+    bin_start = 0,
+    bin_end = 0,
     benchling_format: bool = False,
     save_png = True,
     out_dir = "/tmp/", 
@@ -1017,15 +1020,21 @@ def overlap_hist(
     chunks = granule_data.groupby(group_by)
     get_colour = colour_gen()
     #fix n_bins
-    if type(n_bins) == int and log_scale == True:
+
+    if custom_bin_start_stop:
+        bin_max = bin_end
+        bin_min = bin_start
+    else:
         bin_max = granule_data[plot_column].max()
         bin_min = granule_data[plot_column].min()
-        n_bins = np.geomspace(bin_min, bin_max, n_bins + 1)
+        print("max",bin_max)
+        print("min",bin_min)
+    
+    if type(n_bins) == int and log_scale == True:    
+        # n_bins = np.geomspace(bin_min, bin_max, n_bins)
+        n_bins = np.logspace(bin_min, bin_max, n_bins) # Add to overlap hist, add min max ui elements.
     elif type(n_bins) == int and log_scale == False:
-        print("wolo")
-        bin_max = granule_data[plot_column].max()
-        bin_min = granule_data[plot_column].min()
-        n_bins = np.linspace(bin_min, bin_max, n_bins + 1)
+        n_bins = np.linspace(bin_min, bin_max, n_bins)
 
     plot_data = dict({
         'experiment':[],
