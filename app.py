@@ -215,7 +215,7 @@ overlap_hist_plot_input_options={
     }),
     'select_input':dict({
         # Custom select inputs. Parameters are ui.input_select() parameters
-        # "bin_type":dict({'label':'Bin type', 'choices':['count', 'radius', 'log'], 'selected':"count"}),
+        "bin_type":dict({'label':'Bin type', 'choices':['linear', 'geom space', 'log'], 'selected':"geom space"}),
     }),
     'select_input_dataset_columns':dict({
         # Select inputs that are automatically populated with the columns of the dataset

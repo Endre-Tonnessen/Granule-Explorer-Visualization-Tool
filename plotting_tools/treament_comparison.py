@@ -114,18 +114,18 @@ def hist_plots(granule_data: pd.DataFrame, out_dir: Path, density=False):
         benchling_format=True
     )
 
-    # sigma_bins = np.logspace(-9.5, -4, 60)
-    # sh.overlap_hist(
-    #     "sigma_st",
-    #     "treatment",
-    #     "Surface Tension (Only) (N/m)",
-    #     split_label=None,
-    #     bins=sigma_bins,
-    #     granule_data=granule_data,
-    #     out_dir=out_dir,
-    #     density=density,
-    #     plot_errors="sigma_errST",
-    # )
+    sigma_bins = np.logspace(-9.5, -4, 60)
+    sh.overlap_hist(
+        "sigma_st",
+        "treatment",
+        "Surface Tension (Only) (N/m)",
+        split_label=None,
+        bins=sigma_bins,
+        granule_data=granule_data,
+        out_dir=out_dir,
+        density=density,
+        plot_errors="sigma_errST",
+    )
 
     kappa_bins = np.logspace(-3, 3, 72)#(-3, 2, 60)
     sh.overlap_hist(

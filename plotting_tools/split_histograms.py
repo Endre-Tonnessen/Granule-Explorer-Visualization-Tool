@@ -938,6 +938,7 @@ def overlap_hist(
     density=False,
     legend=False,
     log_scale = True,
+    bin_type = "geom space",
     custom_bin_start_stop = False,
     bin_start = 0,
     bin_end = 0,
@@ -1027,15 +1028,17 @@ def overlap_hist(
     else:
         bin_max = granule_data[plot_column].max()
         bin_min = granule_data[plot_column].min()
-        print("max",bin_max)
-        print("min",bin_min)
+        # print("max",bin_max)
+        # print("min",bin_min)
     
-    if type(n_bins) == int and log_scale == True:    
-        # n_bins = np.geomspace(bin_min, bin_max, n_bins)
-        n_bins = np.logspace(bin_min, bin_max, n_bins) # Add to overlap hist, add min max ui elements.
-    elif type(n_bins) == int and log_scale == False:
+    if bin_type == "geom space":    
+        n_bins = np.geomspace(bin_min, bin_max, n_bins)
+        # n_bins = np.logspace(bin_min, bin_max, n_bins) # Add to overlap hist, add min max ui elements.
+    elif bin_type == "linear":
         n_bins = np.linspace(bin_min, bin_max, n_bins)
-
+    elif bin_type == "log":
+        n_bins = np.logspace(bin_min, bin_max, n_bins) # Add to overlap hist, add min max ui elements.
+        
     plot_data = dict({
         'experiment':[],
         'hist_values':[],
