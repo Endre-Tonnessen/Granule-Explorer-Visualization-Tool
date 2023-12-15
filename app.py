@@ -277,7 +277,10 @@ def server(input, output, session):
     graph_module_server(id="overlap_hist", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.overlap_hist, plot_parameters=overlap_hist_plot_input_options) # Pass data to graph module
     graph_module_server(id="scatteplot", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.scatter_plot, plot_parameters=scatter_plot_input_options) # Pass data to graph module
     graph_module_server(id="2dhistogram", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.histogram2D, plot_parameters=twoDHist_plot_input_options) # Pass data to graph module
-    graph_module_server(id="filter_plot", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.filter_plot, plot_parameters=filter_plot_input_options) # Pass data to graph module
+    graph_module_server(id="filter_plot", 
+                        granule_data_reactive_value=granule_data_reactive_value, 
+                        plot_function=splth.filter_plot, 
+                        plot_parameters=filter_plot_input_options) 
 
     
         
