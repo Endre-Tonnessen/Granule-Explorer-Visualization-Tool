@@ -190,7 +190,7 @@ overlap_hist_plot_input_options={
             'label':"Bin start value"
         }),
         "bin_end":dict({
-            'value':-4, 
+            'value':4, 
             'label':"Bin end value"
         })
     }),
@@ -204,10 +204,10 @@ overlap_hist_plot_input_options={
             'value':True, 
             'label':'log_scale'
         }),
-        'custom_bin_start_stop':dict({
-            'value':False, 
-            'label':'Custom Bin interval'
-        }),
+        # 'custom_bin_start_stop':dict({
+        #     'value':False, 
+        #     'label':'Custom Bin interval'
+        # }),
         'density':dict({
             'value':False, 
             'label':'density'
@@ -215,7 +215,8 @@ overlap_hist_plot_input_options={
     }),
     'select_input':dict({
         # Custom select inputs. Parameters are ui.input_select() parameters
-        "bin_type":dict({'label':'Bin type', 'choices':['linear', 'geom space', 'log'], 'selected':"geom space"}),
+        "bin_type":dict({'label':'Bin type', 'choices':['linear','log'], 'selected':"log"}),
+        # "bin_type":dict({'label':'Bin type', 'choices':['linear', 'geom space', 'log'], 'selected':"geom space"}),
     }),
     'select_input_dataset_columns':dict({
         # Select inputs that are automatically populated with the columns of the dataset
@@ -248,9 +249,9 @@ app_ui = ui.page_fluid(
                 ui.nav("2D Histogram", 
                     graph_module_ui(id="2dhistogram", label="2D Histogram", plot_input_options=twoDHist_plot_input_options)
                 ),
-                ui.nav("Filter plot", 
-                    graph_module_ui(id="filter_plot", label="Filter plot", plot_input_options=filter_plot_input_options)
-                ),
+                #ui.nav("Filter plot", 
+                #    graph_module_ui(id="filter_plot", label="Filter plot", plot_input_options=filter_plot_input_options)
+                #),
                 ui.nav_menu(
                     "Other links",
                     # body of menu
@@ -277,10 +278,10 @@ def server(input, output, session):
     graph_module_server(id="overlap_hist", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.overlap_hist, plot_parameters=overlap_hist_plot_input_options) # Pass data to graph module
     graph_module_server(id="scatteplot", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.scatter_plot, plot_parameters=scatter_plot_input_options) # Pass data to graph module
     graph_module_server(id="2dhistogram", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.histogram2D, plot_parameters=twoDHist_plot_input_options) # Pass data to graph module
-    graph_module_server(id="filter_plot", 
-                        granule_data_reactive_value=granule_data_reactive_value, 
-                        plot_function=splth.filter_plot, 
-                        plot_parameters=filter_plot_input_options) 
+    #graph_module_server(id="filter_plot", 
+    #                    granule_data_reactive_value=granule_data_reactive_value, 
+    #                    plot_function=splth.filter_plot, 
+    #                    plot_parameters=filter_plot_input_options) 
 
     
         

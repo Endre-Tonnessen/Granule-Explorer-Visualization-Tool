@@ -4,7 +4,7 @@
 Web application for automating plotting of granule data.  Built in [Shiny for python](https://shiny.posit.co/py/).
 
 
-To start the application:
+To start the application, clone this repository and run:
 
     shiny run app.py 
 
