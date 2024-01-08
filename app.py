@@ -12,8 +12,6 @@ import sys
 import pathlib
 plt2 = platform.system()
 if plt2 == 'Windows': pathlib.PosixPath = pathlib.WindowsPath
-# temp = pathlib.PosixPath
-# pathlib.PosixPath = pathlib.WindowsPath
 
 # Modules
 from modules.graph_module import graph_module_ui, graph_module_server
@@ -286,4 +284,4 @@ def server(input, output, session):
     
         
 app = App(ui=app_ui, server=server)
-# webbrowser.open("http://127.0.0.1:8000", new=2)
+webbrowser.open("http://127.0.0.1:8000", new=2) # Open web browser
