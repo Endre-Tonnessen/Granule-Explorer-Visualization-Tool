@@ -12,8 +12,6 @@ import sys
 import pathlib
 plt2 = platform.system()
 if plt2 == 'Windows': pathlib.PosixPath = pathlib.WindowsPath
-# temp = pathlib.PosixPath
-# pathlib.PosixPath = pathlib.WindowsPath
 
 # Modules
 from modules.graph_module import graph_module_ui, graph_module_server
@@ -275,14 +273,11 @@ def server(input, output, session):
 
     # Graph modules
     graph_module_server(id="overlap_hist", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.overlap_hist, plot_parameters=overlap_hist_plot_input_options) # Pass data to graph module
-    graph_module_server(id="scatteplot", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.scatter_plot, plot_parameters=scatter_plot_input_options) # Pass data to graph module
-    graph_module_server(id="2dhistogram", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.histogram2D, plot_parameters=twoDHist_plot_input_options) # Pass data to graph module
-    graph_module_server(id="filter_plot", 
-                        granule_data_reactive_value=granule_data_reactive_value, 
-                        plot_function=splth.filter_plot, 
-                        plot_parameters=filter_plot_input_options) 
+    graph_module_server(id="scatteplot", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.scatter_plot, plot_parameters=scatter_plot_input_options) 
+    graph_module_server(id="2dhistogram", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.histogram2D, plot_parameters=twoDHist_plot_input_options) 
+    graph_module_server(id="filter_plot", granule_data_reactive_value=granule_data_reactive_value, plot_function=splth.filter_plot, plot_parameters=filter_plot_input_options) 
 
     
         
 app = App(ui=app_ui, server=server)
-# webbrowser.open("http://127.0.0.1:8000", new=2)
+webbrowser.open("http://127.0.0.1:8000", new=2) # Open web browser
