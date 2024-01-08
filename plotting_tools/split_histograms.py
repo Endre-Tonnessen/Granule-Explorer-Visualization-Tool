@@ -1022,21 +1022,25 @@ def overlap_hist(
     get_colour = colour_gen()
     #fix n_bins
 
-    if custom_bin_start_stop:
-        bin_max = bin_end
-        bin_min = bin_start
-    else:
-        bin_max = granule_data[plot_column].max()
-        bin_min = granule_data[plot_column].min()
+    # if custom_bin_start_stop:
+    #     bin_max = bin_end
+    #     bin_min = bin_start
+    # else:
+    # bin_max = granule_data[plot_column].max()
+    # bin_min = granule_data[plot_column].min()
         # print("max",bin_max)
         # print("min",bin_min)
     
-    if bin_type == "geom space":    
-        n_bins = np.geomspace(bin_min, bin_max, n_bins)
+    # if bin_type == "geom space":    
+        # n_bins = np.geomspace(bin_min, bin_max, n_bins)
         # n_bins = np.logspace(bin_min, bin_max, n_bins) # Add to overlap hist, add min max ui elements.
-    elif bin_type == "linear":
+    if bin_type == "linear":
+        bin_max = bin_end
+        bin_min = bin_start
         n_bins = np.linspace(bin_min, bin_max, n_bins)
     elif bin_type == "log":
+        bin_max = bin_end
+        bin_min = bin_start
         n_bins = np.logspace(bin_min, bin_max, n_bins) # Add to overlap hist, add min max ui elements.
         
     plot_data = dict({
@@ -1100,7 +1104,7 @@ def overlap_hist(
             align="edge",
         )
 
-        if log_scale:
+        if bin_type == "log":
             bar_centers = np.exp(0.5 * (np.log(bin_edges[1:]) + np.log(bin_edges[:-1])))
         else:
             bar_centers = 0.5*(bin_edges[1:] + bin_edges[:-1])
@@ -1151,7 +1155,7 @@ def overlap_hist(
     if legend:
         ax.legend(fontsize=10)
 
-    if log_scale:
+    if bin_type == "log":
         ax.set_xscale("log")
 
     if save_png:

@@ -117,6 +117,16 @@ def graph_module_server(input: Inputs,
                         granule_data_reactive_value: reactive.Value[pd.DataFrame], 
                         plot_function: Callable, 
                         plot_parameters: dict[dict[dict]]):
+    """Module class for server side handling of plot generation 
+
+    Args:
+        input (Inputs): Shiny class containing all ui inputs
+        output (Outputs): Shiny class, see Shiny documentation, not in direct use by this code
+        session (Session): Shiny class, see Shiny documentation, not in direct use by this code
+        granule_data_reactive_value (reactive.Value[pd.DataFrame]): The uploaded pandas dataframe with experiment data
+        plot_function (Callable): Function returning matplotlib.figure object and a an optional dataframe with the underlying plot data.  
+        plot_parameters (dict[dict[dict]]): Config containing ui and server elements. 
+    """
     
     def parse_plot_parameters() -> dict:
         """Parses and returns a 1d dictonary with the plot parameters required for the plot function.
@@ -152,9 +162,9 @@ def graph_module_server(input: Inputs,
       
         granule_data_df: pd.DataFrame = granule_data_reactive_value.get() # Call reactive value to get its contents
         fig, _ = create_fig(input=input, 
-                          granule_data_df=granule_data_df, 
-                          plot_function=plot_function,
-                          plot_parameters=parse_plot_parameters())
+                            granule_data_df=granule_data_df, 
+                            plot_function=plot_function,
+                            plot_parameters=parse_plot_parameters())
         return fig
         
     @reactive.Effect
@@ -178,7 +188,8 @@ def graph_module_server(input: Inputs,
     
     @reactive.Effect
     def update_axis_name_text_input():
-        """Updates x and y-axis names based on selected columns #TODO: Add error handling for plots not using 'select_input_dataset_columns'. Will it fail if element not found?
+        """Updates x and y-axis name/title inputs based on selected columns #TODO: Add error handling for plots not using 'select_input_dataset_columns'. Will it fail if element not found?
+           When selecting a new axis to plot, the axis-title input field will auto-update to the new axis name.
         """
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
             return 
@@ -196,6 +207,7 @@ def graph_module_server(input: Inputs,
     @reactive.Effect 
     # @reactive.event(granule_data_reactive_value)
     def update_experiment_selectize_input():
+        """ Updates the selectize ui element with experiment names contained in the uploaded dataframe. """
         if not granule_data_reactive_value.is_set(): # Ensure file has been uploaded 
             return 
         granule_data_df: pd.DataFrame = granule_data_reactive_value.get() # Call reactive value to get its contents
