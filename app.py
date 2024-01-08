@@ -198,14 +198,6 @@ overlap_hist_plot_input_options={
             'value':True, 
             'label':'legend'
         }),
-        'log_scale':dict({
-            'value':True, 
-            'label':'log_scale'
-        }),
-        # 'custom_bin_start_stop':dict({
-        #     'value':False, 
-        #     'label':'Custom Bin interval'
-        # }),
         'density':dict({
             'value':False, 
             'label':'density'
