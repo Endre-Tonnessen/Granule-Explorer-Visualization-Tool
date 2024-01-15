@@ -3,8 +3,9 @@
 
 Web application for automating plotting of granule data.  Built in [Shiny for python](https://shiny.posit.co/py/).
 
+Python must be installed and on the system path.
 
-To start the application, clone this repository and run:
+To start the application, clone this repository, install the packages in the `requirement.txt` file, and run:
 
     shiny run app.py 
 
