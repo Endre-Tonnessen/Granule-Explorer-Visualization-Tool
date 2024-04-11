@@ -1,4 +1,6 @@
 import pandas as pd
+import pickle as pkl
+import h5py
 from pathlib import Path
 
 from shiny import App, Inputs, Outputs, Session, render, ui, module, reactive
@@ -13,7 +15,7 @@ from shiny.types import FileInfo
 def file_upload_module_ui():
     return (
         x.ui.tooltip(
-            ui.input_file("graunle_aggregate_data", "Upload granule data", accept=[".h5"], multiple=True),
+            ui.input_file("graunle_aggregate_data", "Upload granule data", accept=[".h5,.pkl"], multiple=True),
             "Upload aggregate_data.h5 files to begin!",
             id="graunle_aggregate_data_upload_tool_tip",
             options={
@@ -124,9 +126,17 @@ def read_data(input_file_list: list[Path], comp_file = None, data_file_name="agg
 def _load_terms(aggregate_fittings_path: Path) -> pd.DataFrame:
     """Load the spectrum fitting terms and physical values from disk."""
     # Container for the physical properties of the granules
-    aggregate_fittings = pd.read_hdf(
-        aggregate_fittings_path, key="aggregate_data", mode="r"
-    )
+    if aggregate_fittings_path.name.endswith(".h5"):
+        aggregate_fittings = pd.read_hdf(
+            aggregate_fittings_path, key="aggregate_data", mode="r"
+        )
+    elif aggregate_fittings_path.name.endswith(".pkl"):
+        file = open(f'{str(aggregate_fittings_path)}', 'rb')
+        f = pkl.load(file=file)
+        aggregate_fittings = f["aggregate_data"]
+    else:
+        raise IOError("We can only load data from HDF5 and pkl files currently.")
+
 
     if "experiment" not in aggregate_fittings.columns:
         #old style output files need to have the experiment column infered.

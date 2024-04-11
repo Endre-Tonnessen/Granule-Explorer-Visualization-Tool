@@ -16,8 +16,10 @@ from matplotlib.cm import ScalarMappable
 import numpy as np
 import pandas as pd
 import seaborn as sns
+import pickle as pkl
 from pathlib import Path
 import re
+import h5py
 from collections import OrderedDict
 from scipy.stats import sem, gmean, gstd,norm
 from scipy.stats import gmean as _gmean
@@ -1235,9 +1237,16 @@ def _load_terms(aggregate_fittings_path: Path) -> pd.DataFrame:
     """Load the spectrum fitting terms and physical values from disk."""
     # Container for the physical properties of the granules
     print(aggregate_fittings_path)
-    aggregate_fittings = pd.read_hdf(
-        aggregate_fittings_path, key="aggregate_data", mode="r"
-    )
+    if aggregate_fittings_path.name.endswith(".h5"):
+        aggregate_fittings = pd.read_hdf(
+            aggregate_fittings_path, key="aggregate_data", mode="r"
+        )
+    elif aggregate_fittings_path.name.endswith(".pkl"):
+        file = open(f'{str(aggregate_fittings_path)}', 'rb')
+        f = pkl.load(file=file)
+        aggregate_fittings = f["aggregate_data"]
+    else:
+        raise IOError("We can only load data from HDF5 and pkl files currently.")
 
     if "experiment" not in aggregate_fittings.columns:
         #old style output files need to have the experiment column infered.
