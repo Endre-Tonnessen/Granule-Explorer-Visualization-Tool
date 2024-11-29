@@ -3,7 +3,6 @@ from shiny.types import ImgData, FileInfo
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.colors as co
-import shiny.experimental as x
 import io
 from typing import Callable
 
@@ -43,6 +42,64 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
         allow_multiple_experiments = True
     else:
         allow_multiple_experiments = False
+
+    labels = {"sigma": "Interfacial Tension (N/m)", 
+              "kappa_scale": "Bending Rigidity (kT)", 
+              "fitting_error": "Fitting Error", 
+              "fitting_diff": "Fitting Difference",
+              "mean_radius":"Mean Radius (µm)",
+              "mean_intensity":"Mean Intensity", 
+              "pass_rate":"Pass Rate", 
+              "pass_count":"Pass Count",
+              "durbin_watson":"Durbin Watson",
+              }
+    
+    default_max_values = {"sigma": None,
+                            "kappa_scale": None,
+                            "fitting_error": 0.5,
+                            "fitting_diff": None,
+                            "mean_radius": None,
+                            "mean_intensity": None,
+                            "pass_rate": None,
+                            "pass_count": None,
+                            "durbin_watson": None,
+                            }
+    
+    default_min_values = {"sigma": 1e-10,
+                            "kappa_scale": None,
+                            "fitting_error": None,
+                            "fitting_diff": 0.03,
+                            "mean_radius": None,
+                            "mean_intensity": None,
+                            "pass_rate": 0.6,
+                            "pass_count": None,
+                            "durbin_watson": None,
+                            }
+    
+    params = ["sigma", 
+              "kappa_scale", 
+              "fitting_error", 
+              "fitting_diff", 
+              "mean_radius", 
+              "mean_intensity", 
+              "pass_rate", 
+              "pass_count", 
+              "durbin_watson"
+              ]
+    
+    rows = []
+    for param in params:
+        row_tmp1 = ui.row(
+            f"{labels[param]}",
+            )
+        row_tmp2 = ui.row(
+            ui.input_numeric(id=f"{param}_filter_input_lower", label=f"min:", value=default_min_values[param], step=1e-10, width="200px"),
+            ui.input_numeric(id=f"{param}_filter_input_upper", label=f"max:", value=default_max_values[param], step=1e-10, width="200px")
+        )
+        rows.append(row_tmp1)
+        rows.append(row_tmp2)
+
+
         
     return ui.row(
         ui.row(
@@ -61,8 +118,8 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
                 
             ),
             ui.column(8,
-                x.ui.card(
-                    x.ui.card_header(label),
+                ui.card(
+                    ui.card_header(label),
                     ui.output_plot("plot", click=True)
                 ),
                 # {"style": "background-color: #eee;"}
@@ -71,35 +128,21 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
         ui.row(
             ui.row(
                 # Filter
-                x.ui.layout_column_wrap("450px",
-                    x.ui.card(
-                        x.ui.card_header("Dataset filters"),
-                        ui.row( 
-                            ui.input_switch(id="sigma_filter_switch", label="Surface Tension >", width="200px", value=True), # Sigma
-                            ui.input_numeric(id="sigma_filter_input", label="", value=1e-10, step=1e-10, width="200px")
-                        ),
-                        ui.row(
-                            ui.input_switch(id="pass_rate_filter_switch", label="Pass Rate >", width="200px", value=True),
-                            ui.input_numeric(id="pass_rate_filter_input", label="", value=0.6, step=0.1, width="200px")
-                        ),
-                        ui.row(
-                            ui.input_switch(id="fitting_error_filter_switch", label="Fitting Error <", width="200px", value=True),
-                            ui.input_numeric(id="fitting_error_filter_input", label="", value=0.5, step=0.1, width="200px")
-                        ),
-                        ui.row(
-                            ui.input_switch(id="fitting_diff_filter_switch", label="Fitting diff >", width="200px", value=True),
-                            ui.input_numeric(id="fitting_diff_filter_input", label="", value=0.03, step=0.01, width="200px")
-                        ),
-                        # max_height="400px",
+                ui.layout_column_wrap(#"450px",
+                    ui.card(
+                        ui.card_header("Dataset filters"),
+                        *rows,
+                        max_height="600px",
                         fill=False
                     ),
 
-                    x.ui.card(
-                        x.ui.card_header("Plot parameters"),
+                    ui.card(
+                        ui.card_header("Plot parameters"),
                         ui.page_bootstrap(
                             *plot_input_text_ui_elements, # Unpack plot input ui elements
                             *plot_input_select_ui_elements,
                             *plot_input_numeric_ui_elements,
+                            max_height="600px",
                         ),
                     )
                 )
@@ -110,10 +153,11 @@ def graph_module_ui(label: str, plot_input_options: dict[dict[dict]]):
     )
 
 
+
 @module.server
 def graph_module_server(input: Inputs,
                         output: Outputs,
-                        session: Session, 
+                        session: render, 
                         granule_data_reactive_value: reactive.Value[pd.DataFrame], 
                         plot_function: Callable, 
                         plot_parameters: dict[dict[dict]]):
@@ -219,7 +263,7 @@ def graph_module_server(input: Inputs,
     def modal_download():
         internal_plot_download_button = ui.div() # Placeholder
         if plot_parameters['allow_internal_plot_data_download']: # If config set to True, display button
-            internal_plot_download_button = x.ui.tooltip(
+            internal_plot_download_button = ui.tooltip(
                 ui.download_button("download_plot_internal_data", "Download figure data (.csv)"),
                 "Data downloaded depends on figure type.",
                 id="download_plot_internal_data_tool_tip",
@@ -316,14 +360,14 @@ def graph_module_server(input: Inputs,
 column_aliases = { 
                 "times":"Times(s)",
                 "sigma": "Interfacial Tension (N/m)",
-                "kappa_scale": "Bending Rigidity",
+                "kappa_scale": "Bending Rigidity $(k_BT)$",
                 "sigma_err": "Interfacial Tension Error (N/m)",
-                "kappa_scale_err": "Bending Rigidity Error",
+                "kappa_scale_err": "Bending Rigidity Error $(k_BT)$",
                 "fitting_error": "Fitting Error",
-                "q_2_mag": "Ellipsarity",
-                "mean_radius":"Mean Radius",
+                "q_2_mag": "Circularity",
+                "mean_radius":"Mean Radius (µm)",
                 "pass_rate":"Pass Rate",
-                "mean_intensity":"Intensity"}
+                "mean_intensity":"Mean Intensity"}
 column_filter = ['granule_id','image_path','x','y','bbox_left','bbox_bottom','bbox_right','bbox_top','figure_path', 'treatment', "experiment"]
 
 def filter_columns(column_names: list[str]) -> list[str]:

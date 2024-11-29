@@ -1,7 +1,6 @@
 import platform
 from shiny import App, render, ui, reactive
 from shiny.types import ImgData, FileInfo
-import shiny.experimental as x
 import webbrowser
 # from pathlib import Path
 from numpy import random 
@@ -25,13 +24,13 @@ twoDHist_plot_input_options={
     'allow_internal_plot_data_download': True,
     'allow_multiple_experiments':False,
     'text_input': dict({
-        "plot_title":dict({
-            'value':"Interfacial Tension Error (N/m)", 
-            'label':"Y-axis title"
-        }),
-        "row_title":dict({
+         "row_title":dict({
             'value':"Interfacial Tension (N/m)", 
             'label':"X-axis title"
+        }),
+        "plot_title":dict({
+            'value':"Bending Rigidity $(k_BT)$", 
+            'label':"Y-axis title"
         }),
     }),
     'numeric_input': dict({}),
@@ -58,8 +57,8 @@ twoDHist_plot_input_options={
     'select_input_dataset_columns':dict({
         # Select inputs that are automatically populated with the columns of the dataset
         # Parameters are ui.input_select() parameters
-        "plot_column":dict({'label':'Y-axis', 'choices':['Interfacial Tension Error (N/m)'], 'selected':"Interfacial Tension Error (N/m)"}),
-        "plot_row":dict({'label':'X-axis', 'choices':['Interfacial Tension (N/m)'], 'selected':"Interfacial Tension (N/m)"})
+        "plot_row":dict({'label':'X-axis', 'choices':['Interfacial Tension (N/m)'], 'selected':"Interfacial Tension (N/m)"}),
+        "plot_column":dict({'label':'Y-axis', 'choices':['Bending Rigidity $(k_BT)$'], 'selected':"Bending Rigidity $(k_BT)$"}),
     }),
     'static_input':dict({
         #Inputs that will not change. These will not create ui compenents and are only used server side.
@@ -127,7 +126,7 @@ filter_plot_input_options={
     'numeric_input': dict({
         "n_bins":dict({
             'value':5, 
-            'label':"Nr bins"
+            'label':"Number of bins"
         })
     }),
     'bool_input':dict({
@@ -156,8 +155,8 @@ filter_plot_input_options={
     'select_input_dataset_columns':dict({
         # Select inputs that are automatically populated with the columns of the dataset
         # Parameters are ui.input_select() parameters
-        "plot_column":dict({'label':'Y-axis', 'choices':['Interfacial Tension Error (N/m)'], 'selected':"Interfacial Tension Error (N/m)"}),
-        "bin_column":dict({'label':'X-axis', 'choices':['Interfacial Tension (N/m)'], 'selected':"Interfacial Tension (N/m)"})
+        "bin_column":dict({'label':'X-axis', 'choices':['Interfacial Tension (N/m)'], 'selected':"Interfacial Tension (N/m)"}),
+        "plot_column":dict({'label':'Y-axis', 'choices':['Bending Rigidity $(k_BT)$'], 'selected':"Bending Rigidity $(k_BT)$"}),
     }),
     'static_input':dict({
         #Inputs that will not change. These will not create ui compenents and are only used server side.
@@ -181,7 +180,7 @@ overlap_hist_plot_input_options={
     'numeric_input': dict({
         "n_bins":dict({
             'value':60, 
-            'label':"Nr bins"
+            'label':"Number of bins"
         }),
         "bin_start":dict({
             'value':-9.5, 
@@ -196,11 +195,11 @@ overlap_hist_plot_input_options={
         #Sliders and such
         'legend':dict({
             'value':True, 
-            'label':'legend'
+            'label':'Legend'
         }),
         'density':dict({
             'value':False, 
-            'label':'density'
+            'label':'Density'
         }),
     }),
     'select_input':dict({
@@ -211,7 +210,7 @@ overlap_hist_plot_input_options={
     'select_input_dataset_columns':dict({
         # Select inputs that are automatically populated with the columns of the dataset
         # Parameters are ui.input_select() parameters
-        "plot_column":dict({'label':'X-axis', 'choices':['Interfacial Tension Error (N/m)'], 'selected':"Interfacial Tension Error (N/m)"}),
+        "plot_column":dict({'label':'X-axis', 'choices':['Interfacial Tension (N/m)'], 'selected':"Interfacial Tension (N/m)"}),
         # "plot_row":dict({'label':'X-axis', 'choices':['Interfacial Tension (N/m)'], 'selected':"Interfacial Tension (N/m)"})
     }),
     'static_input':dict({
@@ -221,42 +220,42 @@ overlap_hist_plot_input_options={
 # UI
 app_ui = ui.page_fluid(
         # shinyswatch.theme.spacelab(),
-        x.ui.layout_sidebar(
-            ui.panel_sidebar(
+        ui.page_sidebar(
+            ui.sidebar(
                 file_upload_module_ui("global_file_upload"),
-                width=1.3
+                bg = "#F0F0F0",
+                fillable=True,
             ),
-        ui.panel_main(
-            ui.panel_title("Granule Explorer Visualization Tool", "Granule Explorer"),
-            ui.navset_tab(
-                # Nav elements
-                ui.nav("Overlap Hist", 
-                    graph_module_ui(id="overlap_hist", label="Overlap Histogram", plot_input_options=overlap_hist_plot_input_options)
-                ),
-                ui.nav("Scatter Plot", 
-                    graph_module_ui(id="scatteplot", label="Scatter plot", plot_input_options=scatter_plot_input_options)
-                ),
-                ui.nav("2D Histogram", 
-                    graph_module_ui(id="2dhistogram", label="2D Histogram", plot_input_options=twoDHist_plot_input_options)
-                ),
-                #ui.nav("Filter plot", 
-                #    graph_module_ui(id="filter_plot", label="Filter plot", plot_input_options=filter_plot_input_options)
-                #),
-                ui.nav_menu(
-                    "Other links",
-                    # body of menu
-                    ui.nav("c",
+        
+        ui.panel_title("FlickerPrint Visualisation Tool", "FlickerPrint"),
+        ui.navset_tab(
+            # Nav elements
+            ui.nav_panel("Overlap Histogram", 
+                graph_module_ui(id="overlap_hist", label="Overlap Histogram", plot_input_options=overlap_hist_plot_input_options)
+            ),
+            # ui.nav_panel("Scatter Plot", 
+            #     graph_module_ui(id="scatteplot", label="Scatter plot", plot_input_options=scatter_plot_input_options)
+            # ),
+            ui.nav_panel("2D Histogram", 
+                graph_module_ui(id="2dhistogram", label="2D Histogram", plot_input_options=twoDHist_plot_input_options)
+            ),
+            # ui.nav_panel("Filter plot", 
+            #     graph_module_ui(id="filter_plot", label="Filter plot", plot_input_options=filter_plot_input_options)
+            # ),
+            # ui.nav_menu(
+            #     "Other links",
+            #     # body of menu
+            #     ui.nav_panel("c",
 
-                    ),
-                    "Plain text",
-                    # create a horizontal line
-                    "----",
-                    "More text",
-                    align="right",
-                ),
-            ),
+            #     ),
+            #     "Plain text",
+            #     # create a horizontal line
+            #     "----",
+            #     "More text",
+            #     align="right",
+            # ),
         ),
-    )
+        ),
 )
    
 # Server

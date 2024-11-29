@@ -44,7 +44,7 @@ overlap_hist_plot_input_options = {
         #Creates ui.input_numeric() element with id='n_bins' and value and label as parameters
         "n_bins":dict({
             'value':20, 
-            'label':"Nr bins"
+            'label':"Number of bins"
         })
     }),
     'bool_input':dict({

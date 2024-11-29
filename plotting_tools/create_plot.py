@@ -146,18 +146,25 @@ def filter_dataset(input: Inputs, granule_data_df: pd.DataFrame) -> pd.DataFrame
     """
     # Get dataset filters and return filtered data #TODO: Clean up this prototype code block
     query = []
-    if input['sigma_filter_switch']():
-        sigma_filter = f"sigma > {input['sigma_filter_input']()}"
-        query.append(sigma_filter)
-    if input['pass_rate_filter_switch']():
-        pass_rate_filter = f"pass_rate > {input['pass_rate_filter_input']()}"
-        query.append(pass_rate_filter)
-    if input['fitting_error_filter_switch']():
-        fitting_error_filter = f"fitting_error > {input['fitting_error_filter_input']()}"
-        query.append(fitting_error_filter)
-    if input['fitting_diff_filter_switch']():
-        fitting_diff_filter = f"fitting_diff > {input['fitting_diff_filter_input']()}"
-        query.append(fitting_diff_filter)
+    params = ["sigma", 
+              "kappa_scale", 
+              "fitting_error", 
+              "fitting_diff", 
+              "mean_radius", 
+              "mean_intensity", 
+              "pass_rate", 
+              "pass_count", 
+              "durbin_watson"
+              ]
+    for param in params:
+        max_val = input[f"{param}_filter_input_upper"]()
+        min_val = input[f"{param}_filter_input_lower"]()
+        if min_val is not None:
+            filter = f"{param} > {min_val}"
+            query.append(filter)
+        if max_val is not None:
+            filter = f"{param} < {max_val}"
+            query.append(filter)    
 
     # If any filters, run query
     if len(query) > 0:

@@ -4,7 +4,6 @@ import h5py
 from pathlib import Path
 
 from shiny import App, Inputs, Outputs, Session, render, ui, module, reactive
-import shiny.experimental as x
 from shiny.types import FileInfo
 # from ..plotting_tools.split_histogram import read_data
 
@@ -14,7 +13,7 @@ from shiny.types import FileInfo
 @module.ui
 def file_upload_module_ui():
     return (
-        x.ui.tooltip(
+        ui.tooltip(
             ui.input_file("graunle_aggregate_data", "Upload granule data", accept=[".h5,.pkl"], multiple=True),
             "Upload aggregate_data.h5 files to begin!",
             id="graunle_aggregate_data_upload_tool_tip",
@@ -23,12 +22,12 @@ def file_upload_module_ui():
             },
             show=True
         ),
-        ui.input_file("graunle_image_data", "Upload image data", accept=[".ims"], multiple=False)
+        # ui.input_file("graunle_image_data", "Upload image data", accept=[".ims"], multiple=False)
     )
 
         
 @module.server
-def file_upload_module_server(input: Inputs, output: Outputs, session: Session) -> reactive.Value[pd.DataFrame]:
+def file_upload_module_server(input: Inputs, output: Outputs, session: render) -> reactive.Value[pd.DataFrame]:
     uploaded_file = reactive.Value()
 
     @reactive.Effect
